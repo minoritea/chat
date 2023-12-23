@@ -19,7 +19,7 @@ func withMiddlewares(middlewares ...func(http.Handler) http.Handler) func(http.H
 func requireSession(c Container) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			sessionUser, err := session.GetUserFromSession(c, r)
+			sessionUser, err := session.GetUserFromSession(r.Context(), c, r)
 			if err == nil {
 				ctx := user.SetToContext(r.Context(), sessionUser)
 				next.ServeHTTP(w, r.WithContext(ctx))

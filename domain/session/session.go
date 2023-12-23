@@ -1,6 +1,7 @@
 package session
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
@@ -11,9 +12,12 @@ import (
 type Container = container.Container
 type User = database.User
 
-func StoreNewSession(c *Container, w http.ResponseWriter, r *http.Request, userID string) error {
-	q := c.GetQuerier()
-	sessionID, err := q.CreateSession(userID)
+func StoreNewSession(ctx context.Context, c *Container, w http.ResponseWriter, r *http.Request, userID string) error {
+	q := c.GetQueries()
+	session, err := q.CreateSession(ctx, database.CreateSessionParams{
+		ID:     database.NewID(),
+		UserID: userID,
+	})
 	if err != nil {
 		return err
 	}
@@ -21,13 +25,13 @@ func StoreNewSession(c *Container, w http.ResponseWriter, r *http.Request, userI
 	if err != nil {
 		return err
 	}
-	store.Values["session_id"] = sessionID
+	store.Values["session_id"] = session.ID
 	return store.Save(r, w)
 }
 
 var SessionNotFound = errors.New("session not found")
 
-func GetUserFromSession(c *Container, r *http.Request) (*User, error) {
+func GetUserFromSession(ctx context.Context, c *Container, r *http.Request) (*User, error) {
 	store, err := c.GetSessionStore().Get(r, "session")
 	if err != nil {
 		return nil, errors.Join(SessionNotFound, err)
@@ -36,10 +40,10 @@ func GetUserFromSession(c *Container, r *http.Request) (*User, error) {
 	if !ok {
 		return nil, SessionNotFound
 	}
-	q := c.GetQuerier()
-	user, err := q.GetUserBySessionID(sessionID)
+	q := c.GetQueries()
+	user, err := q.GetUserBySessionID(ctx, sessionID)
 	if err != nil && database.IsSqliteNotFound(err) {
 		return nil, errors.Join(SessionNotFound, err)
 	}
-	return user, err
+	return &user, err
 }

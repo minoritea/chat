@@ -1,6 +1,7 @@
 package signup
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/minoritea/chat/container"
@@ -33,16 +34,18 @@ func PostHandler(c *Container) http.HandlerFunc {
 			return
 		}
 
-		sessionUser, err := user.RegisterUser(c, account, password)
+		sessionUser, err := user.RegisterUser(r.Context(), c, account, password)
 		if err != nil {
+			log.Println(err)
 			var data struct{ Error string }
 			data.Error = "Sign up failed"
 			renderer.RenderHTML(w, "signup", data, http.StatusInternalServerError)
 			return
 		}
 
-		err = session.StoreNewSession(c, w, r, sessionUser.ID)
+		err = session.StoreNewSession(r.Context(), c, w, r, sessionUser.ID)
 		if err != nil {
+			log.Println(err)
 			var data struct{ Error string }
 			data.Error = "Sign up failed"
 			renderer.RenderHTML(w, "signup", data, http.StatusInternalServerError)

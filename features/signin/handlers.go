@@ -4,15 +4,17 @@ import (
 	"net/http"
 
 	"github.com/minoritea/chat/container"
+	"github.com/minoritea/chat/domain/session"
+	"github.com/minoritea/chat/domain/user"
 )
 
-type Container = *container.Container
+type Container = container.Container
 
-func GetHandler(c Container) http.HandlerFunc {
+func GetHandler(c *Container) http.HandlerFunc {
 	return c.GetTemplateRenderer().CompileHTTPHandler("signin", nil, http.StatusOK)
 }
 
-func PostHandler(c Container) http.HandlerFunc {
+func PostHandler(c *Container) http.HandlerFunc {
 	renderer := c.GetTemplateRenderer()
 	return func(w http.ResponseWriter, r *http.Request) {
 		account := r.PostFormValue("account")
@@ -31,8 +33,14 @@ func PostHandler(c Container) http.HandlerFunc {
 			return
 		}
 
-		var data struct{ Error string }
-		data.Error = "Failed to sign in"
-		renderer.RenderHTML(w, "signin", data, http.StatusBadRequest)
+		sessionUser, err := user.GetByAccoutNameAndPassword(r.Context(), c, account, password)
+		if err == nil {
+			var data struct{ Error string }
+			data.Error = "Sign in failed"
+			renderer.RenderHTML(w, "signin", data, http.StatusBadRequest)
+			return
+		}
+		session.StoreNewSession(r.Context(), c, w, r, sessionUser.ID)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
