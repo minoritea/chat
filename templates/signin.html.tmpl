@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>Chat</title>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura.css" type="text/css">
+</head>
+<body>
+	<div class="container" style="display: grid; row-gap: 1rem;">
+		{{if .Error}}
+			<p>Error: <bold>{{.Error}}</bold></p>
+		{{end}}
+		<form action="/signin" method="post">
+			<input type="text" name="account" placeholder="Account Name">
+			<input type="password" name="password" placeholder="Password">
+			<input type="submit" value="Sign in">
+			</div>
+		</form>
+		<div>
+			<a href="/signup"><button>Sign up</button></a>
+		</div>
+	</div>
+</body>
+</html>
