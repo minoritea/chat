@@ -20,16 +20,16 @@ func PostHandler(c *Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		account := r.PostFormValue("account")
 		if account == "" {
-			var data struct{ Error string }
-			data.Error = "Account name is required"
+			var data struct{ Flashes []session.Flash }
+			data.Flashes = append(data.Flashes, session.NewErrorFlash("Account name is required"))
 			renderer.RenderHTML(w, "signup", data, http.StatusBadRequest)
 			return
 		}
 
 		password := r.PostFormValue("password")
 		if password == "" {
-			var data struct{ Error string }
-			data.Error = "Password is required"
+			var data struct{ Flashes []session.Flash }
+			data.Flashes = append(data.Flashes, session.NewErrorFlash("Password is required"))
 			renderer.RenderHTML(w, "signup", data, http.StatusBadRequest)
 			return
 		}
@@ -37,8 +37,8 @@ func PostHandler(c *Container) http.HandlerFunc {
 		sessionUser, err := user.RegisterUser(r.Context(), c, account, password)
 		if err != nil {
 			log.Println(err)
-			var data struct{ Error string }
-			data.Error = "Sign up failed"
+			var data struct{ Flashes []session.Flash }
+			data.Flashes = append(data.Flashes, session.NewErrorFlash("Sign up failed"))
 			renderer.RenderHTML(w, "signup", data, http.StatusInternalServerError)
 			return
 		}
@@ -46,8 +46,8 @@ func PostHandler(c *Container) http.HandlerFunc {
 		err = session.StoreNewSession(r.Context(), c, w, r, sessionUser.ID)
 		if err != nil {
 			log.Println(err)
-			var data struct{ Error string }
-			data.Error = "Sign up failed"
+			var data struct{ Flashes []session.Flash }
+			data.Flashes = append(data.Flashes, session.NewErrorFlash("Sign up failed"))
 			renderer.RenderHTML(w, "signup", data, http.StatusInternalServerError)
 			return
 		}

@@ -26,16 +26,16 @@ func New() (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	store := sessions.NewCookieStore([]byte("secret"))
+	store := sessions.NewCookieStore(sessionSecretFromEnv())
 	return &Container{queries: queries, templateRenderer: renderer, sessionStore: store}, nil
 }
 
-func sessionSecretFromEnv() string {
+func sessionSecretFromEnv() []byte {
 	secret := os.Getenv("SESSION_SECRET")
 	if secret == "" {
 		secret = "development secret"
 	}
-	return secret
+	return []byte(secret)
 }
 
 func (c *Container) GetQueries() *database.Queries            { return c.queries }

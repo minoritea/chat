@@ -29,45 +29,51 @@
 			}
 		}
 
+		class FlashController extends Controller {
+			static values = { index: Number }
+
+			connect() {
+				const index = this.indexValue + 1
+				setTimeout(() => this.element.remove(), index * 10 * 1000)
+			}
+
+			close(event) {
+				this.element.remove()
+			}
+		}
+
 		const application = Application.start()
 		application.register('scroll', ScrollController)
 		application.register('form', FormController)
+		application.register('flash', FlashController)
 
 		// setInterval(() => Turbo.visit('/'), 5 * 1000)
 	</script>
 </head>
 <body>
-	<div class="container" style="height: 100svh; display: grid; grid-template-rows: minmax(0, 1fr) minmax(8rem, 10svh)">
-		<div>
-			{{if .Error }}
-			<div style="color: red">{{ .Error }}</div>
-			{{end}}
-			<div style="overflow-y: scroll; overflow-x: hidden; height: 100%;" data-controller="scroll">
-				{{ $data := . }}
-				{{range .ReversedMessages}}
-				<div
-					data-scroll-target="item"
-					style="margin-bottom: 1rem; margin-right: 2rem">
-					<div style="font-size: 1.2rem; font-weight: bold;">{{ .AccountName }} :</div>
-					<div style="font-size: 1.2rem;">{{ .Message }}</div>
-					<div style="text-align: right; font-size: 0.8rem; color: #999;">{{ $data.FormatCreatedAt .CreatedAt }}</div>
-				</div>
-				{{end}}
+	{{template "flash.html.tmpl" .Flashes}}
+	{{/* 26px is sum of padding-top and padding-bottom of body defined in sakura.css */}}
+	<div class="container" style="height: calc(100svh - 26px); display: grid; grid-template-rows: minmax(0, 1fr) minmax(8rem, 10svh)">
+		<div style="overflow-y: scroll; overflow-x: hidden; height: auto;" data-controller="scroll">
+			{{ $data := . }}
+			{{range .ReversedMessages}}
+			<div
+				data-scroll-target="item"
+				style="margin-bottom: 1rem; margin-right: 2rem">
+				<div style="font-size: 1.2rem; font-weight: bold;">{{ .AccountName }} :</div>
+				<div style="font-size: 1.2rem;">{{ .Message }}</div>
+				<div style="text-align: right; font-size: 0.8rem; color: #999;">{{ $data.FormatCreatedAt .CreatedAt }}</div>
 			</div>
+			{{end}}
 		</div>
-		<div style="margin-top: 1rem">
-			{{if .InputError }}
-			<div style="color: red">{{ .Error }}</div>
-			{{end}}
-			<div style="text-align: right">
-				<form
-					data-controller="form"
-					style="display: grid; grid-template-columns: auto min(10rem);"
-					action="/" method="post">
-					<input type="reset" style="display: none" data-form-target="reset">
-					<input type="text" name="message" placeholder="Message" style="width:100%">
-					<input type="submit" value="Send">
-			</div>
+		<div style="text-align: right; padding-top: 2rem">
+			<form
+				data-controller="form"
+				style="display: grid; grid-template-columns: auto min(10rem);"
+				action="/messages" method="post">
+				<input type="reset" style="display: none" data-form-target="reset">
+				<input type="text" name="message" placeholder="Message" style="width:100%" autocomplete="off">
+				<input type="submit" value="Send">
 		</div>
 	</div>
 </body>
