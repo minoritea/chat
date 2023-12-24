@@ -8,3 +8,10 @@ CREATE TABLE sessions (
 	id TEXT PRIMARY KEY,
 	user_id TEXT NOT NULL
 );
+
+CREATE TABLE messages (
+	id TEXT PRIMARY KEY,
+	user_id TEXT NOT NULL,
+	message TEXT NOT NULL,
+	created_at DATETIME NOT NULL
+);

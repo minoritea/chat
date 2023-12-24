@@ -4,7 +4,71 @@
 	<title>Chat</title>
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura.css" type="text/css">
+	<script type="module">
+		import * as Turbo from 'https://cdn.skypack.dev/@hotwired/turbo@v7.3.0'
+		import { Application, Controller } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
+
+		class FormController extends Controller {
+			static targets = ['reset']
+
+			connect() { this.resetTarget.click() }
+		}
+
+		class ScrollController extends Controller {
+		  static targets = ['item']
+
+			connect() {
+				this.scrollBottom()
+			}
+
+			scrollBottom() {
+				const items = this.itemTargets
+				if (!items?.length) return
+				const bottom = items[items.length - 1]
+				bottom.scrollIntoView({ block: 'end' })
+			}
+		}
+
+		const application = Application.start()
+		application.register('scroll', ScrollController)
+		application.register('form', FormController)
+
+		// setInterval(() => Turbo.visit('/'), 5 * 1000)
+	</script>
 </head>
 <body>
+	<div class="container" style="height: 100svh; display: grid; grid-template-rows: minmax(0, 1fr) minmax(8rem, 10svh)">
+		<div>
+			{{if .Error }}
+			<div style="color: red">{{ .Error }}</div>
+			{{end}}
+			<div style="overflow-y: scroll; overflow-x: hidden; height: 100%;" data-controller="scroll">
+				{{ $data := . }}
+				{{range .ReversedMessages}}
+				<div
+					data-scroll-target="item"
+					style="margin-bottom: 1rem; margin-right: 2rem">
+					<div style="font-size: 1.2rem; font-weight: bold;">{{ .AccountName }} :</div>
+					<div style="font-size: 1.2rem;">{{ .Message }}</div>
+					<div style="text-align: right; font-size: 0.8rem; color: #999;">{{ $data.FormatCreatedAt .CreatedAt }}</div>
+				</div>
+				{{end}}
+			</div>
+		</div>
+		<div style="margin-top: 1rem">
+			{{if .InputError }}
+			<div style="color: red">{{ .Error }}</div>
+			{{end}}
+			<div style="text-align: right">
+				<form
+					data-controller="form"
+					style="display: grid; grid-template-columns: auto min(10rem);"
+					action="/" method="post">
+					<input type="reset" style="display: none" data-form-target="reset">
+					<input type="text" name="message" placeholder="Message" style="width:100%">
+					<input type="submit" value="Send">
+			</div>
+		</div>
+	</div>
 </body>
 </html>

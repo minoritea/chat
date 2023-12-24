@@ -4,7 +4,16 @@
 
 package database
 
-import ()
+import (
+	"time"
+)
+
+type Message struct {
+	ID        string
+	UserID    string
+	Message   string
+	CreatedAt time.Time
+}
 
 type Session struct {
 	ID     string

@@ -42,7 +42,7 @@ func GetUserFromSession(ctx context.Context, c *Container, r *http.Request) (*Us
 	}
 	q := c.GetQueries()
 	user, err := q.GetUserBySessionID(ctx, sessionID)
-	if err != nil && database.IsSqliteNotFound(err) {
+	if err != nil && database.IsRecordNotFound(err) {
 		return nil, errors.Join(SessionNotFound, err)
 	}
 	return &user, err

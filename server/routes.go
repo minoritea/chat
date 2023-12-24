@@ -13,6 +13,7 @@ func NewRouter(c Container) chi.Router {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Get("/", withMiddlewares(requireSession(c))(home.GetHandler(c)))
+	r.Post("/", withMiddlewares(requireSession(c))(home.PostHandler(c)))
 	r.Get("/signin", signin.GetHandler(c))
 	r.Post("/signin", signin.PostHandler(c))
 	r.Get("/signup", signup.GetHandler(c))

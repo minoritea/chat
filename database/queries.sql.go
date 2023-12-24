@@ -7,7 +7,37 @@ package database
 
 import (
 	"context"
+	"time"
 )
+
+const createMessage = `-- name: CreateMessage :one
+INSERT INTO messages (id, user_id, message, created_at) VALUES (?, ?, ?, ?)
+RETURNING id, user_id, message, created_at
+`
+
+type CreateMessageParams struct {
+	ID        string
+	UserID    string
+	Message   string
+	CreatedAt time.Time
+}
+
+func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error) {
+	row := q.db.QueryRowContext(ctx, createMessage,
+		arg.ID,
+		arg.UserID,
+		arg.Message,
+		arg.CreatedAt,
+	)
+	var i Message
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Message,
+		&i.CreatedAt,
+	)
+	return i, err
+}
 
 const createSession = `-- name: CreateSession :one
 INSERT INTO sessions (id, user_id) VALUES (?, ?)
@@ -66,4 +96,47 @@ func (q *Queries) GetUserBySessionID(ctx context.Context, id string) (User, erro
 	var i User
 	err := row.Scan(&i.ID, &i.AccountName, &i.PasswordHash)
 	return i, err
+}
+
+const listMessages = `-- name: ListMessages :many
+SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account_name
+FROM messages JOIN users ON messages.user_id = users.id
+ORDER BY created_at DESC LIMIT ?
+`
+
+type ListMessagesRow struct {
+	ID          string
+	UserID      string
+	Message     string
+	CreatedAt   time.Time
+	AccountName string
+}
+
+func (q *Queries) ListMessages(ctx context.Context, limit int64) ([]ListMessagesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listMessages, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListMessagesRow
+	for rows.Next() {
+		var i ListMessagesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Message,
+			&i.CreatedAt,
+			&i.AccountName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

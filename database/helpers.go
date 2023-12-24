@@ -1,37 +1,51 @@
 package database
 
 import (
+	"database/sql"
+	"database/sql/driver"
 	"errors"
+	"time"
 
-	"github.com/mattn/go-sqlite3"
 	"github.com/oklog/ulid/v2"
 )
 
-func IsSqliteNotFound(err error) bool {
-	return IsSqliteError(err, sqlite3.ErrNotFound)
-}
-
-func IsSqliteError(err error, code sqlite3.ErrNo) bool {
-	if err == nil {
-		return false
-	}
-
-	var sqliteErr sqlite3.Error
-	if errors.As(err, &sqliteErr) {
-		return sqliteErr.Code == code
-	}
-
-	// log.Println("not sqlite error")
-
-	var sqliteErrPtr *sqlite3.Error
-	if errors.As(err, &sqliteErrPtr) && sqliteErrPtr != nil {
-		return sqliteErrPtr.Code == code
-	}
-	//	log.Println("not sqlite error pointer")
-
-	return false
+func IsRecordNotFound(err error) bool {
+	return errors.Is(err, sql.ErrNoRows)
 }
 
 func NewID() string {
 	return ulid.Make().String()
 }
+
+type Time time.Time
+
+func (t *Time) Scan(src any) error {
+	switch v := src.(type) {
+	case time.Time:
+		*t = Time(v)
+		return nil
+	case *time.Time:
+		*t = Time(*v)
+		return nil
+	case string:
+		tt, err := time.Parse(time.RFC3339Nano, v)
+		if err != nil {
+			return err
+		}
+		*t = Time(tt)
+		return nil
+	case *string:
+		tt, err := time.Parse(time.RFC3339Nano, *v)
+		if err != nil {
+			return err
+		}
+		*t = Time(tt)
+		return nil
+	case nil:
+		return nil
+	default:
+		return errors.New("invalid type")
+	}
+}
+func (t Time) Value() (driver.Value, error) { return time.Time(t), nil }
+func (t Time) Time() time.Time              { return time.Time(t) }
