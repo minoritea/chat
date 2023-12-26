@@ -57,3 +57,20 @@ func (r *Renderer) CompileHTTPHandler(name string, data any, code int) http.Hand
 		r.RenderHTML(w, name, data, code)
 	}
 }
+
+func (c *Renderer) RenderStream(w http.ResponseWriter, name string, data any, code int) {
+	const suffix = ".stream.tmpl"
+	var buf bytes.Buffer
+	err := c.tmpl.ExecuteTemplate(&buf, name+suffix, data)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(code)
+	w.Header().Set("Content-Type", "text/vnd-turbo-stream.html; charset=utf-8")
+	_, err = io.Copy(w, &buf)
+	if err != nil {
+		log.Println(err)
+	}
+}

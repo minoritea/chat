@@ -100,7 +100,7 @@ func (q *Queries) GetUserBySessionID(ctx context.Context, id string) (User, erro
 const listMessages = `-- name: ListMessages :many
 SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account
 FROM messages JOIN users ON messages.user_id = users.id
-ORDER BY created_at DESC LIMIT ?
+ORDER BY messages.id DESC LIMIT ?
 `
 
 type ListMessagesRow struct {
@@ -120,6 +120,55 @@ func (q *Queries) ListMessages(ctx context.Context, limit int64) ([]ListMessages
 	var items []ListMessagesRow
 	for rows.Next() {
 		var i ListMessagesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Message,
+			&i.CreatedAt,
+			&i.Account,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMessagesBeforeID = `-- name: ListMessagesBeforeID :many
+SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account
+FROM messages JOIN users ON messages.user_id = users.id
+WHERE messages.id < ?
+ORDER BY messages.id DESC LIMIT ?
+`
+
+type ListMessagesBeforeIDParams struct {
+	ID    string
+	Limit int64
+}
+
+type ListMessagesBeforeIDRow struct {
+	ID        string
+	UserID    string
+	Message   string
+	CreatedAt time.Time
+	Account   string
+}
+
+func (q *Queries) ListMessagesBeforeID(ctx context.Context, arg ListMessagesBeforeIDParams) ([]ListMessagesBeforeIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, listMessagesBeforeID, arg.ID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListMessagesBeforeIDRow
+	for rows.Next() {
+		var i ListMessagesBeforeIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,

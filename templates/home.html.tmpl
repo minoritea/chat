@@ -17,7 +17,7 @@
 			}
 		}
 
-		class ScrollController extends Controller {
+		class MessagesController extends Controller {
 			connect() {
 				this.scrollToBottom()
 			}
@@ -29,12 +29,22 @@
 				}
 			}
 
-			scroll() {
-				if (this.element.scrollTop == 0) {
+			async scroll() {
+				if (!this.isLoading && this.element.scrollTop == 0) {
 					const first = this.element.firstElementChild
-					this.loadMessages()
-					this.element.scrollTop = first.offsetTop
+					if (first && first.id !== 'reached-start') {
+						this.isLoading = true
+						await this.loadMessages(first.id)
+						this.element.scrollTop = first.offsetTop
+						this.isLoading = false
+					}
 				}
+			}
+
+			async loadMessages(id) {
+				const res = await fetch('/messages?before_id=' + this.element.firstElementChild.id)
+				const html = await res.text()
+				Turbo.renderStreamMessage(html)
 			}
 		}
 
@@ -52,7 +62,7 @@
 		}
 
 		const application = Application.start()
-		application.register('scroll', ScrollController)
+		application.register('messages', MessagesController)
 		application.register('form', FormController)
 		application.register('flash', FlashController)
 
@@ -63,13 +73,16 @@
 	{{template "flash.html.tmpl" .Flashes}}
 	{{/* 26px is sum of padding-top and padding-bottom of body defined in sakura.css */}}
 	<div class="container" style="height: calc(100svh - 26px); display: grid; grid-template-rows: minmax(0, 1fr) minmax(8rem, 10svh)">
-		<div style="overflow-y: scroll; overflow-x: hidden; height: auto;" data-controller="scroll">
-			{{ $data := . }}
+		<div
+			style="overflow-y: scroll; overflow-x: hidden; height: auto;"
+			data-controller="messages"
+			data-action="scroll->messages#scroll">
+			{{ $ := . }}
 			{{range .ReversedMessages}}
-			<div style="margin-bottom: 1rem; margin-right: 2rem">
+			<div id="{{.ID}}" style="margin-bottom: 1rem; margin-right: 2rem">
 				<div style="font-size: 1.2rem; font-weight: bold;">{{ .Account }} :</div>
 				<div style="font-size: 1.2rem;">{{ .Message }}</div>
-				<div style="text-align: right; font-size: 0.8rem; color: #999;">{{ $data.FormatCreatedAt .CreatedAt }}</div>
+				<div style="text-align: right; font-size: 0.8rem; color: #999;">{{ $.FormatCreatedAt .CreatedAt }}</div>
 			</div>
 			{{end}}
 		</div>

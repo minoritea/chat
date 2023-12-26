@@ -21,4 +21,10 @@ RETURNING *;
 -- name: ListMessages :many
 SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account
 FROM messages JOIN users ON messages.user_id = users.id
-ORDER BY created_at DESC LIMIT ?;
+ORDER BY messages.id DESC LIMIT ?;
+
+-- name: ListMessagesBeforeID :many
+SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account
+FROM messages JOIN users ON messages.user_id = users.id
+WHERE messages.id < ?
+ORDER BY messages.id DESC LIMIT ?;

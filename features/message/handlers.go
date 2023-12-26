@@ -39,3 +39,51 @@ func PostHandler(c *Container) http.HandlerFunc {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
+
+type Data struct {
+	ReachedStart bool
+	BeforeID     string
+	Messages     []database.ListMessagesBeforeIDRow
+}
+
+func (d Data) FormatCreatedAt(t time.Time) string {
+	return t.Format(time.DateTime)
+}
+
+func (d Data) ReversedMessages() []database.ListMessagesBeforeIDRow {
+	l := len(d.Messages)
+	reversed := make([]database.ListMessagesBeforeIDRow, l)
+	for i := range d.Messages {
+		reversed[l-i-1] = d.Messages[i]
+	}
+	return reversed
+}
+
+func GetHandler(c *Container) http.HandlerFunc {
+	renderer := c.GetTemplateRenderer()
+	return func(w http.ResponseWriter, r *http.Request) {
+		beforeID := r.URL.Query().Get("before_id")
+		if beforeID == "" {
+			log.Println("message_id is empty")
+			session.MustAddFlash(c, w, r, session.NewErrorFlash("message_id is empty"))
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+		messages, err := c.GetQueries().ListMessagesBeforeID(r.Context(), database.ListMessagesBeforeIDParams{
+			ID:    beforeID,
+			Limit: 20,
+		})
+		if err != nil {
+			log.Println(err)
+			session.MustAddFlash(c, w, r, session.NewErrorFlash("Internal Server Error"))
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
+		var data Data
+		data.BeforeID = beforeID
+		data.Messages = messages
+		if len(messages) < 20 {
+			data.ReachedStart = true
+		}
+		renderer.RenderStream(w, "message", data, http.StatusOK)
+	}
+}
