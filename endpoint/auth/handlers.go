@@ -5,26 +5,15 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
+	"github.com/minoritea/chat/resource"
 	"github.com/oklog/ulid/v2"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/github"
 )
 
 type Container = resource.Container
-
-var port = "8080"
-var oauth2Config = &oauth2.Config{
-	ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
-	ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
-	Endpoint:     github.Endpoint,
-	// RedirectURL:  "http://localhost:" + port + "/oauth/callback",
-	Scopes: []string{"user:email"},
-}
 
 func GetHandler(c Container) http.HandlerFunc {
 	renderer := c.Renderer()
@@ -36,6 +25,7 @@ func GetHandler(c Container) http.HandlerFunc {
 }
 
 func PostHandler(c Container) http.HandlerFunc {
+	oauth2Config := c.Config().GithubOAuth2Config()
 	return func(w http.ResponseWriter, r *http.Request) {
 		state := ulid.Make().String()
 		s := session.MustGet(c, r)
@@ -49,6 +39,7 @@ func PostHandler(c Container) http.HandlerFunc {
 }
 
 func GetCallbackHandler(c Container) http.HandlerFunc {
+	oauth2Config := c.Config().GithubOAuth2Config()
 	return func(w http.ResponseWriter, r *http.Request) {
 		state := r.URL.Query().Get("state")
 		sessionState, ok := session.MustGet(c, r).Values["oauth2state"].(string)
