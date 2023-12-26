@@ -1,11 +1,11 @@
 package server
 
 import (
-	"github.com/minoritea/chat/container"
+	"github.com/minoritea/chat/resource"
 	"net/http"
 )
 
-type Container = *container.Container
+type Container = resource.Container
 
 func New(bind string, c Container) *http.Server {
 	r := NewRouter(c)

@@ -1,4 +1,4 @@
-package container
+package resource
 
 import (
 	"database/sql"
@@ -7,13 +7,13 @@ import (
 	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/minoritea/chat/database"
-	"github.com/minoritea/chat/templates"
+	"github.com/minoritea/chat/template"
 )
 
 type Container struct {
-	queries          *database.Queries
-	templateRenderer *templates.Renderer
-	sessionStore     sessions.Store
+	queries      *database.Queries
+	renderer     *template.Renderer
+	sessionStore sessions.Store
 }
 
 func New() (*Container, error) {
@@ -22,12 +22,12 @@ func New() (*Container, error) {
 		return nil, err
 	}
 	queries := database.New(db)
-	renderer, err := templates.NewRenderer()
+	renderer, err := template.NewRenderer()
 	if err != nil {
 		return nil, err
 	}
 	store := sessions.NewCookieStore(sessionSecretFromEnv())
-	return &Container{queries: queries, templateRenderer: renderer, sessionStore: store}, nil
+	return &Container{queries: queries, renderer: renderer, sessionStore: store}, nil
 }
 
 func sessionSecretFromEnv() []byte {
@@ -38,6 +38,6 @@ func sessionSecretFromEnv() []byte {
 	return []byte(secret)
 }
 
-func (c *Container) GetQueries() *database.Queries            { return c.queries }
-func (c *Container) GetTemplateRenderer() *templates.Renderer { return c.templateRenderer }
-func (c *Container) GetSessionStore() sessions.Store          { return c.sessionStore }
+func (c Container) Queries() *database.Queries   { return c.queries }
+func (c Container) Renderer() *template.Renderer { return c.renderer }
+func (c Container) SessionStore() sessions.Store { return c.sessionStore }

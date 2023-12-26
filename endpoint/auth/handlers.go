@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/minoritea/chat/container"
+	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
 	"github.com/oklog/ulid/v2"
@@ -15,7 +15,7 @@ import (
 	"golang.org/x/oauth2/github"
 )
 
-type Container = container.Container
+type Container = resource.Container
 
 var port = "8080"
 var oauth2Config = &oauth2.Config{
@@ -26,8 +26,8 @@ var oauth2Config = &oauth2.Config{
 	Scopes: []string{"user:email"},
 }
 
-func GetHandler(c *Container) http.HandlerFunc {
-	renderer := c.GetTemplateRenderer()
+func GetHandler(c Container) http.HandlerFunc {
+	renderer := c.Renderer()
 	return func(w http.ResponseWriter, r *http.Request) {
 		var data struct{ Flashes []session.Flash }
 		data.Flashes = session.MustGetFlashes(c, w, r)
@@ -35,7 +35,7 @@ func GetHandler(c *Container) http.HandlerFunc {
 	}
 }
 
-func PostHandler(c *Container) http.HandlerFunc {
+func PostHandler(c Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		state := ulid.Make().String()
 		s := session.MustGet(c, r)
@@ -48,7 +48,7 @@ func PostHandler(c *Container) http.HandlerFunc {
 	}
 }
 
-func GetCallbackHandler(c *Container) http.HandlerFunc {
+func GetCallbackHandler(c Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		state := r.URL.Query().Get("state")
 		sessionState, ok := session.MustGet(c, r).Values["oauth2state"].(string)

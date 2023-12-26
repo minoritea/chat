@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/minoritea/chat/container"
+	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/database"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
 )
 
-type Container = container.Container
+type Container = resource.Container
 
-func PostHandler(c *Container) http.HandlerFunc {
+func PostHandler(c Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		message := r.PostFormValue("message")
 		if message == "" {
@@ -23,7 +23,7 @@ func PostHandler(c *Container) http.HandlerFunc {
 			return
 		}
 
-		_, err := c.GetQueries().CreateMessage(r.Context(), database.CreateMessageParams{
+		_, err := c.Queries().CreateMessage(r.Context(), database.CreateMessageParams{
 			ID:        database.NewID(),
 			UserID:    user.FromContext(r.Context()).ID,
 			Message:   message,
@@ -59,8 +59,8 @@ func (d Data) ReversedMessages() []database.ListMessagesBeforeIDRow {
 	return reversed
 }
 
-func GetHandler(c *Container) http.HandlerFunc {
-	renderer := c.GetTemplateRenderer()
+func GetHandler(c Container) http.HandlerFunc {
+	renderer := c.Renderer()
 	return func(w http.ResponseWriter, r *http.Request) {
 		beforeID := r.URL.Query().Get("before_id")
 		if beforeID == "" {
@@ -68,7 +68,7 @@ func GetHandler(c *Container) http.HandlerFunc {
 			session.MustAddFlash(c, w, r, session.NewErrorFlash("message_id is empty"))
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		}
-		messages, err := c.GetQueries().ListMessagesBeforeID(r.Context(), database.ListMessagesBeforeIDParams{
+		messages, err := c.Queries().ListMessagesBeforeID(r.Context(), database.ListMessagesBeforeIDParams{
 			ID:    beforeID,
 			Limit: 20,
 		})

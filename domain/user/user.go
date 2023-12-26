@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 
-	"github.com/minoritea/chat/container"
+	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/database"
 )
 
-type Container = container.Container
+type Container = resource.Container
 type User = database.User
 
-func FindOrCreateUser(ctx context.Context, c *Container, account string) (*User, error) {
-	q := c.GetQueries()
+func FindOrCreateUser(ctx context.Context, c Container, account string) (*User, error) {
+	q := c.Queries()
 	user, err := q.GetUserByAccount(ctx, account)
 	if err == nil {
 		return &user, nil
@@ -43,6 +43,6 @@ func SetToContext(ctx context.Context, user *User) context.Context {
 
 var ErrPasswordMismatch = errors.New("password mismatch")
 
-func GetByAccoutNameAndPassword(ctx context.Context, c *Container, accountName, password string) (*User, error) {
+func GetByAccoutNameAndPassword(ctx context.Context, c Container, accountName, password string) (*User, error) {
 	return nil, nil
 }

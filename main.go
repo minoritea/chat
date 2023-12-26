@@ -3,17 +3,17 @@ package main
 import (
 	"log"
 
-	"github.com/minoritea/chat/container"
+	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/server"
 )
 
 func run() error {
-	c, err := container.New()
+	c, err := resource.New()
 	if err != nil {
 		return err
 	}
 
-	return server.ListenAndServe("127.0.0.1:8080", c)
+	return server.ListenAndServe("127.0.0.1:8080", *c)
 }
 
 func main() {

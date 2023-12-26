@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/minoritea/chat/container"
+	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/database"
 	"github.com/minoritea/chat/domain/session"
 )
 
-type Container = container.Container
+type Container = resource.Container
 
 type Data struct {
 	Messages []database.ListMessagesRow
@@ -29,12 +29,12 @@ func (d Data) ReversedMessages() []database.ListMessagesRow {
 	return reversed
 }
 
-func GetHandler(c *Container) http.HandlerFunc {
-	renderer := c.GetTemplateRenderer()
+func GetHandler(c Container) http.HandlerFunc {
+	renderer := c.Renderer()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var data Data
 		data.Flashes = session.MustGetFlashes(c, w, r)
-		messages, err := c.GetQueries().ListMessages(r.Context(), 20)
+		messages, err := c.Queries().ListMessages(r.Context(), 20)
 		if err != nil {
 			data.Flashes = append(data.Flashes, session.NewErrorFlash("Failed to fetch messages"))
 			renderer.RenderHTML(w, "home", data, http.StatusInternalServerError)

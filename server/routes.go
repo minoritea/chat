@@ -3,9 +3,9 @@ package server
 import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/minoritea/chat/features/auth"
-	"github.com/minoritea/chat/features/home"
-	"github.com/minoritea/chat/features/message"
+	"github.com/minoritea/chat/endpoint/auth"
+	"github.com/minoritea/chat/endpoint/home"
+	"github.com/minoritea/chat/endpoint/message"
 )
 
 func NewRouter(c Container) chi.Router {
