@@ -1,9 +1,9 @@
 -- name: CreateUser :one
-INSERT INTO users (id, account_name, password_hash) VALUES (?, ?, ?)
+INSERT INTO users (id, account) VALUES (?, ?)
 RETURNING *;
 
--- name: GetUserByAccountName :one
-SELECT * FROM users WHERE account_name = ?;
+-- name: GetUserByAccount :one
+SELECT * FROM users WHERE account = ?;
 
 -- name: CreateSession :one
 INSERT INTO sessions (id, user_id) VALUES (?, ?)
@@ -19,6 +19,6 @@ INSERT INTO messages (id, user_id, message, created_at) VALUES (?, ?, ?, ?)
 RETURNING *;
 
 -- name: ListMessages :many
-SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account_name
+SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account
 FROM messages JOIN users ON messages.user_id = users.id
 ORDER BY created_at DESC LIMIT ?;

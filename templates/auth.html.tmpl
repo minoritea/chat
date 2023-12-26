@@ -27,15 +27,12 @@
 <body>
 	{{template "flash.html.tmpl" .Flashes}}
 	<div class="container" style="padding-top: 10rem">
-		<form action="/signin" method="post">
-			<input type="text" name="account" placeholder="Account Name">
-			<input type="password" name="password" placeholder="Password">
-			<input type="submit" value="Sign in">
-			</div>
+		<form action="/auth" method="post">
+			<input
+				type="submit"
+				name="auth"
+				style="font-size: 2rem; padding: 1rem"
+				value="Sign in with GitHub">
 		</form>
-		<div>
-			<a href="/signup"><button>Sign up</button></a>
-		</div>
 	</div>
 </body>
-</html>

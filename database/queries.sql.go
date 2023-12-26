@@ -57,36 +57,35 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (S
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (id, account_name, password_hash) VALUES (?, ?, ?)
-RETURNING id, account_name, password_hash
+INSERT INTO users (id, account) VALUES (?, ?)
+RETURNING id, account
 `
 
 type CreateUserParams struct {
-	ID           string
-	AccountName  string
-	PasswordHash string
+	ID      string
+	Account string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser, arg.ID, arg.AccountName, arg.PasswordHash)
+	row := q.db.QueryRowContext(ctx, createUser, arg.ID, arg.Account)
 	var i User
-	err := row.Scan(&i.ID, &i.AccountName, &i.PasswordHash)
+	err := row.Scan(&i.ID, &i.Account)
 	return i, err
 }
 
-const getUserByAccountName = `-- name: GetUserByAccountName :one
-SELECT id, account_name, password_hash FROM users WHERE account_name = ?
+const getUserByAccount = `-- name: GetUserByAccount :one
+SELECT id, account FROM users WHERE account = ?
 `
 
-func (q *Queries) GetUserByAccountName(ctx context.Context, accountName string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserByAccountName, accountName)
+func (q *Queries) GetUserByAccount(ctx context.Context, account string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByAccount, account)
 	var i User
-	err := row.Scan(&i.ID, &i.AccountName, &i.PasswordHash)
+	err := row.Scan(&i.ID, &i.Account)
 	return i, err
 }
 
 const getUserBySessionID = `-- name: GetUserBySessionID :one
-SELECT users.id, users.account_name, users.password_hash
+SELECT users.id, users.account
 FROM users JOIN sessions ON sessions.user_id = users.id
 WHERE sessions.id = ?
 `
@@ -94,22 +93,22 @@ WHERE sessions.id = ?
 func (q *Queries) GetUserBySessionID(ctx context.Context, id string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUserBySessionID, id)
 	var i User
-	err := row.Scan(&i.ID, &i.AccountName, &i.PasswordHash)
+	err := row.Scan(&i.ID, &i.Account)
 	return i, err
 }
 
 const listMessages = `-- name: ListMessages :many
-SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account_name
+SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account
 FROM messages JOIN users ON messages.user_id = users.id
 ORDER BY created_at DESC LIMIT ?
 `
 
 type ListMessagesRow struct {
-	ID          string
-	UserID      string
-	Message     string
-	CreatedAt   time.Time
-	AccountName string
+	ID        string
+	UserID    string
+	Message   string
+	CreatedAt time.Time
+	Account   string
 }
 
 func (q *Queries) ListMessages(ctx context.Context, limit int64) ([]ListMessagesRow, error) {
@@ -126,7 +125,7 @@ func (q *Queries) ListMessages(ctx context.Context, limit int64) ([]ListMessages
 			&i.UserID,
 			&i.Message,
 			&i.CreatedAt,
-			&i.AccountName,
+			&i.Account,
 		); err != nil {
 			return nil, err
 		}

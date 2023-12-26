@@ -9,23 +9,32 @@
 		import { Application, Controller } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
 
 		class FormController extends Controller {
-			static targets = ['reset']
+			static targets = ['reset', 'message']
 
-			connect() { this.resetTarget.click() }
+			connect() { 
+				this.resetTarget.click()
+				this.messageTarget.focus()
+			}
 		}
 
 		class ScrollController extends Controller {
-		  static targets = ['item']
-
 			connect() {
-				this.scrollBottom()
+				this.scrollToBottom()
 			}
 
-			scrollBottom() {
-				const items = this.itemTargets
-				if (!items?.length) return
-				const bottom = items[items.length - 1]
-				bottom.scrollIntoView({ block: 'end' })
+			scrollToBottom() {
+				const bottom = this.element.lastElementChild
+				if (bottom) {
+					bottom.scrollIntoView({ block: 'end' })
+				}
+			}
+
+			scroll() {
+				if (this.element.scrollTop == 0) {
+					const first = this.element.firstElementChild
+					this.loadMessages()
+					this.element.scrollTop = first.offsetTop
+				}
 			}
 		}
 
@@ -57,10 +66,8 @@
 		<div style="overflow-y: scroll; overflow-x: hidden; height: auto;" data-controller="scroll">
 			{{ $data := . }}
 			{{range .ReversedMessages}}
-			<div
-				data-scroll-target="item"
-				style="margin-bottom: 1rem; margin-right: 2rem">
-				<div style="font-size: 1.2rem; font-weight: bold;">{{ .AccountName }} :</div>
+			<div style="margin-bottom: 1rem; margin-right: 2rem">
+				<div style="font-size: 1.2rem; font-weight: bold;">{{ .Account }} :</div>
 				<div style="font-size: 1.2rem;">{{ .Message }}</div>
 				<div style="text-align: right; font-size: 0.8rem; color: #999;">{{ $data.FormatCreatedAt .CreatedAt }}</div>
 			</div>
@@ -72,7 +79,7 @@
 				style="display: grid; grid-template-columns: auto min(10rem);"
 				action="/messages" method="post">
 				<input type="reset" style="display: none" data-form-target="reset">
-				<input type="text" name="message" placeholder="Message" style="width:100%" autocomplete="off">
+				<input type="text" name="message" placeholder="Message" style="width:100%" autocomplete="off" data-form-target="message">
 				<input type="submit" value="Send">
 		</div>
 	</div>

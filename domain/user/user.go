@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"crypto/sha256"
 	"errors"
 
 	"github.com/minoritea/chat/container"
@@ -12,13 +11,18 @@ import (
 type Container = container.Container
 type User = database.User
 
-func RegisterUser(ctx context.Context, c *Container, accountName, password string) (*User, error) {
-	passwordHash := sha256.Sum256([]byte(password))
+func FindOrCreateUser(ctx context.Context, c *Container, account string) (*User, error) {
 	q := c.GetQueries()
-	user, err := q.CreateUser(ctx, database.CreateUserParams{
-		ID:           database.NewID(),
-		AccountName:  accountName,
-		PasswordHash: string(passwordHash[:]),
+	user, err := q.GetUserByAccount(ctx, account)
+	if err == nil {
+		return &user, nil
+	}
+	if !database.IsRecordNotFound(err) {
+		return nil, err
+	}
+	user, err = q.CreateUser(ctx, database.CreateUserParams{
+		ID:      database.NewID(),
+		Account: account,
 	})
 	return &user, err
 }
@@ -40,14 +44,5 @@ func SetToContext(ctx context.Context, user *User) context.Context {
 var ErrPasswordMismatch = errors.New("password mismatch")
 
 func GetByAccoutNameAndPassword(ctx context.Context, c *Container, accountName, password string) (*User, error) {
-	q := c.GetQueries()
-	user, err := q.GetUserByAccountName(ctx, accountName)
-	if err != nil {
-		return nil, err
-	}
-	passwordHash := sha256.Sum256([]byte(password))
-	if user.PasswordHash != string(passwordHash[:]) {
-		return nil, ErrPasswordMismatch
-	}
-	return &user, nil
+	return nil, nil
 }

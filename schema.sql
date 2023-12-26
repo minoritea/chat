@@ -1,7 +1,6 @@
 CREATE TABLE users (
 	id TEXT PRIMARY KEY,
-	account_name TEXT NOT NULL,
-	password_hash TEXT NOT NULL
+	account TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE sessions (

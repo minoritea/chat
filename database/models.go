@@ -21,7 +21,6 @@ type Session struct {
 }
 
 type User struct {
-	ID           string
-	AccountName  string
-	PasswordHash string
+	ID      string
+	Account string
 }

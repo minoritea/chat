@@ -27,7 +27,7 @@ func requireSession(c Container) func(http.Handler) http.Handler {
 			}
 			log.Println(err)
 			if errors.Is(err, session.SessionNotFound) {
-				http.Redirect(w, r, "/signin", http.StatusSeeOther)
+				http.Redirect(w, r, "/auth", http.StatusSeeOther)
 				return
 			}
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
