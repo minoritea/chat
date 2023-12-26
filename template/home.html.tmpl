@@ -77,13 +77,8 @@
 			style="overflow-y: scroll; overflow-x: hidden; height: auto;"
 			data-controller="messages"
 			data-action="scroll->messages#scroll">
-			{{ $ := . }}
-			{{range .ReversedMessages}}
-			<div id="{{.ID}}" style="margin-bottom: 1rem; margin-right: 2rem">
-				<div style="font-size: 1.2rem; font-weight: bold;">{{ .Account }} :</div>
-				<div style="font-size: 1.2rem;">{{ .Message }}</div>
-				<div style="text-align: right; font-size: 0.8rem; color: #999;">{{ $.FormatCreatedAt .CreatedAt }}</div>
-			</div>
+			{{range .Messages}}
+				{{ template "message.tmpl" . }}
 			{{end}}
 		</div>
 		<div style="text-align: right; padding-top: 2rem">

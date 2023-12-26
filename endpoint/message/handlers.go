@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/database"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
+	"github.com/minoritea/chat/resource"
+	"github.com/samber/lo"
 )
 
 type Container = resource.Container
@@ -46,19 +47,6 @@ type Data struct {
 	Messages     []database.ListMessagesBeforeIDRow
 }
 
-func (d Data) FormatCreatedAt(t time.Time) string {
-	return t.Format(time.DateTime)
-}
-
-func (d Data) ReversedMessages() []database.ListMessagesBeforeIDRow {
-	l := len(d.Messages)
-	reversed := make([]database.ListMessagesBeforeIDRow, l)
-	for i := range d.Messages {
-		reversed[l-i-1] = d.Messages[i]
-	}
-	return reversed
-}
-
 func GetHandler(c Container) http.HandlerFunc {
 	renderer := c.Renderer()
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +68,7 @@ func GetHandler(c Container) http.HandlerFunc {
 		}
 		var data Data
 		data.BeforeID = beforeID
-		data.Messages = messages
+		data.Messages = lo.Reverse(messages)
 		if len(messages) < 20 {
 			data.ReachedStart = true
 		}

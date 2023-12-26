@@ -2,11 +2,11 @@ package home
 
 import (
 	"net/http"
-	"time"
 
-	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/database"
 	"github.com/minoritea/chat/domain/session"
+	"github.com/minoritea/chat/resource"
+	"github.com/samber/lo"
 )
 
 type Container = resource.Container
@@ -14,19 +14,6 @@ type Container = resource.Container
 type Data struct {
 	Messages []database.ListMessagesRow
 	Flashes  []session.Flash
-}
-
-func (d Data) FormatCreatedAt(t time.Time) string {
-	return t.Format(time.DateTime)
-}
-
-func (d Data) ReversedMessages() []database.ListMessagesRow {
-	l := len(d.Messages)
-	reversed := make([]database.ListMessagesRow, l)
-	for i := range d.Messages {
-		reversed[l-i-1] = d.Messages[i]
-	}
-	return reversed
 }
 
 func GetHandler(c Container) http.HandlerFunc {
@@ -40,7 +27,7 @@ func GetHandler(c Container) http.HandlerFunc {
 			renderer.RenderHTML(w, "home", data, http.StatusInternalServerError)
 			return
 		}
-		data.Messages = messages
+		data.Messages = lo.Reverse(messages)
 		renderer.RenderOkHTML(w, "home", data)
 	})
 }

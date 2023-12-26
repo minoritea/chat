@@ -11,7 +11,7 @@ import (
 )
 
 type Container struct {
-	queries      *database.Queries
+	db           *sql.DB
 	renderer     *template.Renderer
 	sessionStore sessions.Store
 }
@@ -21,13 +21,12 @@ func New() (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	queries := database.New(db)
 	renderer, err := template.NewRenderer()
 	if err != nil {
 		return nil, err
 	}
 	store := sessions.NewCookieStore(sessionSecretFromEnv())
-	return &Container{queries: queries, renderer: renderer, sessionStore: store}, nil
+	return &Container{db: db, renderer: renderer, sessionStore: store}, nil
 }
 
 func sessionSecretFromEnv() []byte {
@@ -38,6 +37,6 @@ func sessionSecretFromEnv() []byte {
 	return []byte(secret)
 }
 
-func (c Container) Queries() *database.Queries   { return c.queries }
+func (c Container) Queries() *database.Queries   { return database.New(c.db) }
 func (c Container) Renderer() *template.Renderer { return c.renderer }
 func (c Container) SessionStore() sessions.Store { return c.sessionStore }

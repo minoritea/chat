@@ -24,7 +24,8 @@ type Renderer struct {
 }
 
 func NewRenderer() (*Renderer, error) {
-	tmpl, err := template.ParseFS(tmplFS, "*.tmpl")
+	tmpl := template.New("").Funcs(helpers)
+	tmpl, err := tmpl.ParseFS(tmplFS, "*.tmpl")
 	if err != nil {
 		return nil, err
 	}
@@ -58,10 +59,10 @@ func (r *Renderer) CompileHTTPHandler(name string, data any, code int) http.Hand
 	}
 }
 
-func (c *Renderer) RenderStream(w http.ResponseWriter, name string, data any, code int) {
+func (r *Renderer) RenderStream(w http.ResponseWriter, name string, data any, code int) {
 	const suffix = ".stream.tmpl"
 	var buf bytes.Buffer
-	err := c.tmpl.ExecuteTemplate(&buf, name+suffix, data)
+	err := r.tmpl.ExecuteTemplate(&buf, name+suffix, data)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
