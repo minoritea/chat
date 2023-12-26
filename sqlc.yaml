@@ -1,9 +1,9 @@
 version: "2"
 
 sql:
-  - engine: "sqlite"
-    queries: "queries.sql"
-    schema: "schema.sql"
+  - engine: sqlite
+    queries: database/queries.sql
+    schema: database/schema.sql
     gen:
       go:
-        out: "database"
+        out: database
