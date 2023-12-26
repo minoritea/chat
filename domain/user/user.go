@@ -2,10 +2,9 @@ package user
 
 import (
 	"context"
-	"errors"
 
-	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/database"
+	"github.com/minoritea/chat/resource"
 )
 
 type Container = resource.Container
@@ -39,10 +38,4 @@ func FromContext(ctx context.Context) *User {
 
 func SetToContext(ctx context.Context, user *User) context.Context {
 	return context.WithValue(ctx, userKey{}, *user)
-}
-
-var ErrPasswordMismatch = errors.New("password mismatch")
-
-func GetByAccoutNameAndPassword(ctx context.Context, c Container, accountName, password string) (*User, error) {
-	return nil, nil
 }

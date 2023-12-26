@@ -7,7 +7,3 @@ sql:
     gen:
       go:
         out: "database"
-          #        overrides:
-          #          - column: messages.created_at
-          #            go_type:
-          #              type: Time
