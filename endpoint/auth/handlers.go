@@ -18,7 +18,7 @@ type Container = resource.Container
 func GetHandler(c Container) http.HandlerFunc {
 	renderer := c.Renderer()
 	return func(w http.ResponseWriter, r *http.Request) {
-		var data struct{ Flashes []session.Flash }
+		var data session.FlashData
 		data.Flashes = session.MustGetFlashes(c, w, r)
 		renderer.RenderOkHTML(w, "auth", data)
 	}
@@ -45,8 +45,7 @@ func GetCallbackHandler(c Container) http.HandlerFunc {
 		sessionState, ok := session.MustGet(c, r).Values["oauth2state"].(string)
 		if !ok || sessionState != state {
 			log.Println("invalid oauth2 state")
-			session.MustAddFlash(c, w, r, session.NewErrorFlash("invalid oauth2 state"))
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+			session.RedirectWithErrorFlash(c, w, r, "/", "Invalid oauth2 state")
 			return
 		}
 
@@ -54,30 +53,26 @@ func GetCallbackHandler(c Container) http.HandlerFunc {
 		token, err := oauth2Config.Exchange(r.Context(), code)
 		if err != nil {
 			log.Println(err)
-			session.MustAddFlash(c, w, r, session.NewErrorFlash("failed to exchange oauth2 code"))
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+			session.RedirectWithErrorFlash(c, w, r, "/", "Failed to exchange oauth2 code")
 			return
 		}
 
 		githubUser, err := getGithubUser(r.Context(), token)
 		if err != nil {
 			log.Println(err)
-			session.MustAddFlash(c, w, r, session.NewErrorFlash("failed to get github user"))
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+			session.RedirectWithErrorFlash(c, w, r, "/", "Failed to get github user")
 			return
 		}
 		sessionUser, err := user.FindOrCreateUser(r.Context(), c, githubUser.Login)
 		if err != nil {
 			log.Println(err)
-			session.MustAddFlash(c, w, r, session.NewErrorFlash("internal server error"))
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+			session.RedirectWithErrorFlash(c, w, r, "/", "Internal server error")
 			return
 		}
 		err = session.StoreNewSession(r.Context(), c, w, r, sessionUser.ID)
 		if err != nil {
 			log.Println(err)
-			session.MustAddFlash(c, w, r, session.NewErrorFlash("internal server error"))
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+			session.RedirectWithErrorFlash(c, w, r, "/", "Internal server error")
 			return
 		}
 		http.Redirect(w, r, "/", http.StatusSeeOther)

@@ -58,8 +58,7 @@ func GetUserFromSession(ctx context.Context, c Container, r *http.Request) (*Use
 func MustGet(c Container, r *http.Request) *sessions.Session {
 	session, err := c.SessionStore().Get(r, SessionName)
 	if err != nil {
-		log.Println(err)
-		panic(err)
+		log.Panic(err)
 	}
 	return session
 }
@@ -85,8 +84,7 @@ func AddFlash(c Container, w http.ResponseWriter, r *http.Request, flash Flash) 
 func MustAddFlash(c Container, w http.ResponseWriter, r *http.Request, flash Flash) {
 	err := AddFlash(c, w, r, flash)
 	if err != nil {
-		log.Println(err)
-		panic(err)
+		log.Panic(err)
 	}
 }
 
@@ -113,10 +111,14 @@ func GetFlashes(c Container, w http.ResponseWriter, r *http.Request) ([]Flash, e
 func MustGetFlashes(c Container, w http.ResponseWriter, r *http.Request) []Flash {
 	flashes, err := GetFlashes(c, w, r)
 	if err != nil {
-		log.Println(err)
-		panic(err)
+		log.Panic(err)
 	}
 	return flashes
 }
 
 type FlashData struct{ Flashes []Flash }
+
+func RedirectWithErrorFlash(c Container, w http.ResponseWriter, r *http.Request, url, message string) {
+	MustAddFlash(c, w, r, NewErrorFlash(message))
+	http.Redirect(w, r, url, http.StatusSeeOther)
+}
