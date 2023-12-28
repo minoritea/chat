@@ -41,8 +41,8 @@ func (r *Renderer) RenderHTML(w http.ResponseWriter, name string, data any, code
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(code)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(code)
 	_, err = io.Copy(w, &buf)
 	if err != nil {
 		log.Println(err)
@@ -68,8 +68,8 @@ func (r *Renderer) RenderStream(w http.ResponseWriter, name string, data any, co
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "text/vnd.turbo-stream.html; charset=utf-8")
 	w.WriteHeader(code)
-	w.Header().Set("Content-Type", "text/vnd-turbo-stream.html; charset=utf-8")
 	_, err = io.Copy(w, &buf)
 	if err != nil {
 		log.Println(err)

@@ -1,0 +1,9 @@
+{{if .IsTerminal }}
+	<div id="terminal" data-messages-target="terminal" hidden></div>
+{{end}}
+{{range .Messages}}
+	{{ template "message.tmpl" . }}
+{{end}}
+{{ if .MightHaveMore }}
+	<div class="more-messages" data-messages-target="more" hidden></div>
+{{ end }}

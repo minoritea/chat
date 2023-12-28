@@ -18,13 +18,24 @@ WHERE sessions.id = ?;
 INSERT INTO messages (id, user_id, message, created_at) VALUES (?, ?, ?, ?)
 RETURNING *;
 
--- name: ListMessages :many
-SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account
+-- name: ListNewestMessages :many
+SELECT messages.id, messages.message, messages.created_at, users.account
 FROM messages JOIN users ON messages.user_id = users.id
 ORDER BY messages.id DESC LIMIT ?;
 
+-- name: ListOldestMessages :many
+SELECT messages.id, messages.message, messages.created_at, users.account
+FROM messages JOIN users ON messages.user_id = users.id
+ORDER BY messages.id ASC LIMIT ?;
+
 -- name: ListMessagesBeforeID :many
-SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account
+SELECT messages.id, messages.message, messages.created_at, users.account
 FROM messages JOIN users ON messages.user_id = users.id
 WHERE messages.id < ?
 ORDER BY messages.id DESC LIMIT ?;
+
+-- name: ListMessagesAfterID :many
+SELECT messages.id, messages.message, messages.created_at, users.account
+FROM messages JOIN users ON messages.user_id = users.id
+WHERE messages.id > ?
+ORDER BY messages.id ASC LIMIT ?;

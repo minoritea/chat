@@ -8,46 +8,6 @@
 		import * as Turbo from 'https://cdn.skypack.dev/@hotwired/turbo@v7.3.0'
 		import { Application, Controller } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
 
-		class FormController extends Controller {
-			static targets = ['reset', 'message']
-
-			connect() { 
-				this.resetTarget.click()
-				this.messageTarget.focus()
-			}
-		}
-
-		class MessagesController extends Controller {
-			connect() {
-				this.scrollToBottom()
-			}
-
-			scrollToBottom() {
-				const bottom = this.element.lastElementChild
-				if (bottom) {
-					bottom.scrollIntoView({ block: 'end' })
-				}
-			}
-
-			async scroll() {
-				if (!this.isLoading && this.element.scrollTop == 0) {
-					const first = this.element.firstElementChild
-					if (first && first.id !== 'reached-start') {
-						this.isLoading = true
-						await this.loadMessages(first.id)
-						this.element.scrollTop = first.offsetTop
-						this.isLoading = false
-					}
-				}
-			}
-
-			async loadMessages(id) {
-				const res = await fetch('/messages?before_id=' + this.element.firstElementChild.id)
-				const html = await res.text()
-				Turbo.renderStreamMessage(html)
-			}
-		}
-
 		class FlashController extends Controller {
 			static values = { index: Number }
 
@@ -61,10 +21,96 @@
 			}
 		}
 
+		class FormController extends Controller {
+			static targets = ['reset', 'textInput']
+
+			connect() {
+				this.textInputTarget.focus()
+			}
+
+			reset(ev) {
+				this.resetTarget.click()
+			}
+		}
+
+		class MessagesController extends Controller {
+			static targets = ['message', 'more', 'terminal']
+
+			connect() {
+				this.#scrollToBottom()
+			}
+
+			moreTargetConnected(element) {
+				element.remove()
+				this.#loadNewMessages()
+			}
+
+			terminalTargetConnected() {
+				this.isTerminal = true
+			}
+
+			messageTargetConnected() {
+				if (this.scrollReachedToBottom) {
+					this.#scrollToBottom()
+				}
+			}
+
+			afterSubmit() {
+				this.#scrollToBottom()
+			}
+
+			async scroll() {
+				this.scrollReachedToBottom = this.#isLastMessageLastVisibleRow()
+
+				if (!this.isTerminal && this.element.scrollTop == 0) {
+					this.isScrollLoading = true
+					await this.#loadPastMessages()
+					const offsetTop = this.messageTargets.length > 0 ?
+						this.messageTargets[0].offsetTop :
+						0
+					this.element.scrollTop = offsetTop
+					this.isScrollLoading = false
+				}
+			}
+
+			#isLastMessageLastVisibleRow() {
+				const lastMessage = this.messageTargets.slice(-1)[0]
+				if (!lastMessage) {
+					return false
+				}
+				return this.element.scrollTop + this.element.clientHeight >= lastMessage.offsetTop
+			}
+
+			#scrollToBottom() {
+				const bottom = Array.from(
+					this.element.querySelectorAll('.message')).
+					slice(-1)[0]
+				if (bottom) {
+					bottom.scrollIntoView({ block: 'end' })
+				}
+			}
+
+			async #loadPastMessages() {
+				const id = this.messageTargets.length > 0 ?
+					this.messageTargets[0].id : 'message0'
+				const res = await fetch('/messages?before_id=' + id)
+				const html = await res.text()
+				Turbo.renderStreamMessage(html)
+			}
+
+			async #loadNewMessages() {
+				const id = this.messageTargets.length > 0 ?
+					this.messageTargets.slice(-1)[0].id : 'message0'
+				const res = await fetch('/messages?after_id=' + id)
+				const html = await res.text()
+				Turbo.renderStreamMessage(html)
+			}
+		}
+
 		const application = Application.start()
-		application.register('messages', MessagesController)
-		application.register('form', FormController)
 		application.register('flash', FlashController)
+		application.register('form', FormController)
+		application.register('messages', MessagesController)
 
 		// setInterval(() => Turbo.visit('/'), 5 * 1000)
 	</script>
@@ -74,21 +120,22 @@
 	{{/* 26px is sum of padding-top and padding-bottom of body defined in sakura.css */}}
 	<div class="container" style="height: calc(100svh - 26px); display: grid; grid-template-rows: minmax(0, 1fr) minmax(8rem, 10svh)">
 		<div
+			id="messages"
 			style="overflow-y: scroll; overflow-x: hidden; height: auto;"
 			data-controller="messages"
-			data-action="scroll->messages#scroll">
-			{{range .Messages}}
-				{{ template "message.tmpl" . }}
-			{{end}}
+			data-action="scroll->messages#scroll turbo:submit-end@document->messages#afterSubmit">
+			{{ template "messages.tmpl" . }}
 		</div>
 		<div style="text-align: right; padding-top: 2rem">
 			<form
 				data-controller="form"
 				style="display: grid; grid-template-columns: auto min(10rem);"
+				data-action="turbo:submit-end@document->form#reset"
 				action="/messages" method="post">
 				<input type="reset" style="display: none" data-form-target="reset">
-				<input type="text" name="message" placeholder="Message" style="width:100%" autocomplete="off" data-form-target="message">
+				<input type="text" name="message" placeholder="Message" style="width:100%" autocomplete="off" data-form-target="textInput">
 				<input type="submit" value="Send">
+			</form>
 		</div>
 	</div>
 </body>

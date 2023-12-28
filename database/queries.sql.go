@@ -97,32 +97,36 @@ func (q *Queries) GetUserBySessionID(ctx context.Context, id string) (User, erro
 	return i, err
 }
 
-const listMessages = `-- name: ListMessages :many
-SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account
+const listMessagesAfterID = `-- name: ListMessagesAfterID :many
+SELECT messages.id, messages.message, messages.created_at, users.account
 FROM messages JOIN users ON messages.user_id = users.id
-ORDER BY messages.id DESC LIMIT ?
+WHERE messages.id > ?
+ORDER BY messages.id ASC LIMIT ?
 `
 
-type ListMessagesRow struct {
+type ListMessagesAfterIDParams struct {
+	ID    string
+	Limit int64
+}
+
+type ListMessagesAfterIDRow struct {
 	ID        string
-	UserID    string
 	Message   string
 	CreatedAt time.Time
 	Account   string
 }
 
-func (q *Queries) ListMessages(ctx context.Context, limit int64) ([]ListMessagesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listMessages, limit)
+func (q *Queries) ListMessagesAfterID(ctx context.Context, arg ListMessagesAfterIDParams) ([]ListMessagesAfterIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, listMessagesAfterID, arg.ID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListMessagesRow
+	var items []ListMessagesAfterIDRow
 	for rows.Next() {
-		var i ListMessagesRow
+		var i ListMessagesAfterIDRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.UserID,
 			&i.Message,
 			&i.CreatedAt,
 			&i.Account,
@@ -141,7 +145,7 @@ func (q *Queries) ListMessages(ctx context.Context, limit int64) ([]ListMessages
 }
 
 const listMessagesBeforeID = `-- name: ListMessagesBeforeID :many
-SELECT messages.id, messages.user_id, messages.message, messages.created_at, users.account
+SELECT messages.id, messages.message, messages.created_at, users.account
 FROM messages JOIN users ON messages.user_id = users.id
 WHERE messages.id < ?
 ORDER BY messages.id DESC LIMIT ?
@@ -154,7 +158,6 @@ type ListMessagesBeforeIDParams struct {
 
 type ListMessagesBeforeIDRow struct {
 	ID        string
-	UserID    string
 	Message   string
 	CreatedAt time.Time
 	Account   string
@@ -171,7 +174,88 @@ func (q *Queries) ListMessagesBeforeID(ctx context.Context, arg ListMessagesBefo
 		var i ListMessagesBeforeIDRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.UserID,
+			&i.Message,
+			&i.CreatedAt,
+			&i.Account,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listNewestMessages = `-- name: ListNewestMessages :many
+SELECT messages.id, messages.message, messages.created_at, users.account
+FROM messages JOIN users ON messages.user_id = users.id
+ORDER BY messages.id DESC LIMIT ?
+`
+
+type ListNewestMessagesRow struct {
+	ID        string
+	Message   string
+	CreatedAt time.Time
+	Account   string
+}
+
+func (q *Queries) ListNewestMessages(ctx context.Context, limit int64) ([]ListNewestMessagesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listNewestMessages, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListNewestMessagesRow
+	for rows.Next() {
+		var i ListNewestMessagesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Message,
+			&i.CreatedAt,
+			&i.Account,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listOldestMessages = `-- name: ListOldestMessages :many
+SELECT messages.id, messages.message, messages.created_at, users.account
+FROM messages JOIN users ON messages.user_id = users.id
+ORDER BY messages.id ASC LIMIT ?
+`
+
+type ListOldestMessagesRow struct {
+	ID        string
+	Message   string
+	CreatedAt time.Time
+	Account   string
+}
+
+func (q *Queries) ListOldestMessages(ctx context.Context, limit int64) ([]ListOldestMessagesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listOldestMessages, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListOldestMessagesRow
+	for rows.Next() {
+		var i ListOldestMessagesRow
+		if err := rows.Scan(
+			&i.ID,
 			&i.Message,
 			&i.CreatedAt,
 			&i.Account,

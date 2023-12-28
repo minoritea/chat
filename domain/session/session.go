@@ -8,8 +8,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
-	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/database"
+	"github.com/minoritea/chat/resource"
 )
 
 func init() { gob.Register(Flash{}) }
@@ -118,3 +118,5 @@ func MustGetFlashes(c Container, w http.ResponseWriter, r *http.Request) []Flash
 	}
 	return flashes
 }
+
+type FlashData struct{ Flashes []Flash }
