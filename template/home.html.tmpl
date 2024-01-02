@@ -91,19 +91,29 @@
 			}
 
 			async #loadPastMessages() {
-				const id = this.messageTargets.length > 0 ?
-					this.messageTargets[0].id : 'message0'
-				const res = await fetch('/messages?before_id=' + id)
-				const html = await res.text()
-				Turbo.renderStreamMessage(html)
+				if (this.messageTargets.length > 0) {
+					const id = this.messageTargets[0].id
+					const res = await fetch('/messages?before_id=' + id)
+					const html = await res.text()
+					Turbo.renderStreamMessage(html)
+				} else {
+					const res = await fetch('/messages')
+					const html = await res.text()
+					Turbo.renderStreamMessage(html)
+				}
 			}
 
 			async #loadNewMessages() {
-				const id = this.messageTargets.length > 0 ?
-					this.messageTargets.slice(-1)[0].id : 'message0'
-				const res = await fetch('/messages?after_id=' + id)
-				const html = await res.text()
-				Turbo.renderStreamMessage(html)
+				if (this.messageTargets.length > 0) {
+					const id = this.messageTargets.slice(-1)[0].id
+					const res = await fetch('/messages?after_id=' + id)
+					const html = await res.text()
+					Turbo.renderStreamMessage(html)
+				} else {
+					const res = await fetch('/messages')
+					const html = await res.text()
+					Turbo.renderStreamMessage(html)
+				}
 			}
 		}
 
