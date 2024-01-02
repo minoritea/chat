@@ -38,6 +38,11 @@
 
 			connect() {
 				this.#scrollToBottom()
+				this.intervalId = setInterval(() => Turbo.visit('/messages/more'), 5 * 1000)
+			}
+
+			disconnect() {
+				this.intervalId != null && clearInterval(this.intervalId)
 			}
 
 			moreTargetConnected(element) {
@@ -121,8 +126,6 @@
 		application.register('flash', FlashController)
 		application.register('form', FormController)
 		application.register('messages', MessagesController)
-
-		// setInterval(() => Turbo.visit('/'), 5 * 1000)
 	</script>
 </head>
 <body>
