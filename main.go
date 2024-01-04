@@ -1,3 +1,5 @@
+//go:build !cgi
+
 package main
 
 import (

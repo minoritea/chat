@@ -43,3 +43,6 @@ watch:
 		-i '**/_test.go' \
 		-i '**/.*' \
 		-- go run main.go
+
+chat.cgi:
+	go build -o chat.cgi -tags cgi -ldflags "-s -w -X 'main.GithubClientID=${GITHUB_CLIENT_ID}' -X 'main.GithubClientSecret=${GITHUB_CLIENT_SECRET}' -X 'main.SessionSecret=${SESSION_SECRET}' -X 'main.DatabasePath=./chat'" -trimpath
