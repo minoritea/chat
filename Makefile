@@ -43,3 +43,6 @@ watch:
 		-i '**/_test.go' \
 		-i '**/.*' \
 		-- go run main.go
+
+chat.cgi:
+	go build -o chat.cgi -tags cgi -ldflags "-s -w" -trimpath

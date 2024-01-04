@@ -1,9 +1,10 @@
-//go:build !cgi
+//go:build cgi
 
 package main
 
 import (
 	"log"
+	"net/http/cgi"
 
 	"github.com/minoritea/chat/config"
 	"github.com/minoritea/chat/resource"
@@ -16,8 +17,9 @@ func run() error {
 	if err != nil {
 		return err
 	}
-
-	return server.ListenAndServe(*c)
+	return cgi.Serve(
+		server.NewRouter(*c),
+	)
 }
 
 func main() {
