@@ -3,7 +3,9 @@
 package main
 
 import (
+	"flag"
 	"log"
+	"os"
 
 	"github.com/minoritea/chat/config"
 	"github.com/minoritea/chat/resource"
@@ -11,7 +13,15 @@ import (
 )
 
 func run() error {
-	conf := config.Parse()
+	var conf config.Config
+	flag.StringVar(&conf.Host, "host", "localhost", "host")
+	flag.StringVar(&conf.Port, "port", "8080", "port")
+	flag.StringVar(&conf.GithubClientID, "github-client-id", os.Getenv("GITHUB_CLIENT_ID"), "github client id")
+	flag.StringVar(&conf.GithubClientSecret, "github-client-secret", os.Getenv("GITHUB_CLIENT_SECRET"), "github client secret")
+	flag.StringVar(&conf.SessionSecret, "session-secret", os.Getenv("SESSION_SECRET"), "session secret")
+	flag.StringVar(&conf.DatabasePath, "database-path", "./chat.db", "database path")
+	flag.Parse()
+
 	c, err := resource.New(conf)
 	if err != nil {
 		return err

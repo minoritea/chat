@@ -11,12 +11,25 @@ import (
 	"github.com/minoritea/chat/server"
 )
 
+var (
+	GithubClientID     = ""
+	GithubClientSecret = ""
+	SessionSecret      = ""
+	DatabasePath       = ""
+)
+
 func run() error {
-	conf := config.Parse()
+	var conf config.Config
+	conf.GithubClientID = GithubClientID
+	conf.GithubClientSecret = GithubClientSecret
+	conf.SessionSecret = SessionSecret
+	conf.DatabasePath = DatabasePath
+
 	c, err := resource.New(conf)
 	if err != nil {
 		return err
 	}
+
 	return cgi.Serve(
 		server.NewRouter(*c),
 	)
