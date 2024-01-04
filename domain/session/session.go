@@ -9,18 +9,29 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/minoritea/chat/database"
-	"github.com/minoritea/chat/resource"
 )
 
 func init() { gob.Register(Flash{}) }
 
-type Container = resource.Container
 type User = database.User
 
 const SessionName = "session"
 
-func StoreNewSession(ctx context.Context, c Container, w http.ResponseWriter, r *http.Request, userID string) error {
-	q := c.Queries()
+type SessionStoreContainer interface {
+	SessionStore() sessions.Store
+}
+
+type QuerierContainer interface {
+	Querier() database.Querier
+}
+
+type StoreNewSessionContainer interface {
+	SessionStoreContainer
+	QuerierContainer
+}
+
+func StoreNewSession(ctx context.Context, c StoreNewSessionContainer, w http.ResponseWriter, r *http.Request, userID string) error {
+	q := c.Querier()
 	session, err := q.CreateSession(ctx, database.CreateSessionParams{
 		ID:     database.NewID(),
 		UserID: userID,
@@ -38,7 +49,12 @@ func StoreNewSession(ctx context.Context, c Container, w http.ResponseWriter, r 
 
 var SessionNotFound = errors.New("session not found")
 
-func GetUserFromSession(ctx context.Context, c Container, r *http.Request) (*User, error) {
+type GetUserFromSessionContainer interface {
+	SessionStoreContainer
+	QuerierContainer
+}
+
+func GetUserFromSession(ctx context.Context, c GetUserFromSessionContainer, r *http.Request) (*User, error) {
 	store, err := c.SessionStore().Get(r, SessionName)
 	if err != nil {
 		return nil, errors.Join(SessionNotFound, err)
@@ -47,7 +63,7 @@ func GetUserFromSession(ctx context.Context, c Container, r *http.Request) (*Use
 	if !ok {
 		return nil, SessionNotFound
 	}
-	q := c.Queries()
+	q := c.Querier()
 	user, err := q.GetUserBySessionID(ctx, sessionID)
 	if err != nil && database.IsRecordNotFound(err) {
 		return nil, errors.Join(SessionNotFound, err)
@@ -55,7 +71,7 @@ func GetUserFromSession(ctx context.Context, c Container, r *http.Request) (*Use
 	return &user, err
 }
 
-func MustGet(c Container, r *http.Request) *sessions.Session {
+func MustGet(c SessionStoreContainer, r *http.Request) *sessions.Session {
 	session, err := c.SessionStore().Get(r, SessionName)
 	if err != nil {
 		log.Panic(err)
@@ -72,7 +88,7 @@ func NewErrorFlash(message string) Flash {
 	return Flash{Message: message, Type: "error"}
 }
 
-func AddFlash(c Container, w http.ResponseWriter, r *http.Request, flash Flash) error {
+func AddFlash(c SessionStoreContainer, w http.ResponseWriter, r *http.Request, flash Flash) error {
 	session, err := c.SessionStore().Get(r, SessionName)
 	if err != nil {
 		return err
@@ -81,14 +97,14 @@ func AddFlash(c Container, w http.ResponseWriter, r *http.Request, flash Flash) 
 	return session.Save(r, w)
 }
 
-func MustAddFlash(c Container, w http.ResponseWriter, r *http.Request, flash Flash) {
+func MustAddFlash(c SessionStoreContainer, w http.ResponseWriter, r *http.Request, flash Flash) {
 	err := AddFlash(c, w, r, flash)
 	if err != nil {
 		log.Panic(err)
 	}
 }
 
-func GetFlashes(c Container, w http.ResponseWriter, r *http.Request) ([]Flash, error) {
+func GetFlashes(c SessionStoreContainer, w http.ResponseWriter, r *http.Request) ([]Flash, error) {
 	session, err := c.SessionStore().Get(r, SessionName)
 	if err != nil {
 		return nil, err
@@ -108,7 +124,7 @@ func GetFlashes(c Container, w http.ResponseWriter, r *http.Request) ([]Flash, e
 	return messages, nil
 }
 
-func MustGetFlashes(c Container, w http.ResponseWriter, r *http.Request) []Flash {
+func MustGetFlashes(c SessionStoreContainer, w http.ResponseWriter, r *http.Request) []Flash {
 	flashes, err := GetFlashes(c, w, r)
 	if err != nil {
 		log.Panic(err)
@@ -118,7 +134,7 @@ func MustGetFlashes(c Container, w http.ResponseWriter, r *http.Request) []Flash
 
 type FlashData struct{ Flashes []Flash }
 
-func RedirectWithErrorFlash(c Container, w http.ResponseWriter, r *http.Request, url, message string) {
+func RedirectWithErrorFlash(c SessionStoreContainer, w http.ResponseWriter, r *http.Request, url, message string) {
 	MustAddFlash(c, w, r, NewErrorFlash(message))
 	http.Redirect(w, r, url, http.StatusSeeOther)
 }

@@ -30,7 +30,7 @@ func New(conf config.Config) (*Container, error) {
 	return &Container{config: conf, db: db, renderer: renderer, sessionStore: store}, nil
 }
 
-func (c Container) Queries() *database.Queries   { return database.New(c.db) }
+func (c Container) Querier() database.Querier    { return database.New(c.db) }
 func (c Container) Renderer() *template.Renderer { return c.renderer }
 func (c Container) SessionStore() sessions.Store { return c.sessionStore }
 func (c Container) Config() config.Config        { return c.config }

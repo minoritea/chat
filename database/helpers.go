@@ -8,6 +8,8 @@ import (
 	"github.com/oklog/ulid/v2"
 )
 
+var RecordNotFound = sql.ErrNoRows
+
 func IsRecordNotFound(err error) bool {
 	return errors.Is(err, sql.ErrNoRows)
 }

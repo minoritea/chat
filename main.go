@@ -34,5 +34,3 @@ func main() {
 		log.Fatal(err)
 	}
 }
-
-type session struct{ userID string }

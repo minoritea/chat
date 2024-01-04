@@ -4,14 +4,16 @@ import (
 	"context"
 
 	"github.com/minoritea/chat/database"
-	"github.com/minoritea/chat/resource"
 )
 
-type Container = resource.Container
+type Container interface {
+	Querier() database.Querier
+}
+
 type User = database.User
 
 func FindOrCreateUser(ctx context.Context, c Container, account string) (*User, error) {
-	q := c.Queries()
+	q := c.Querier()
 	user, err := q.GetUserByAccount(ctx, account)
 	if err == nil {
 		return &user, nil

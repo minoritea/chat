@@ -18,7 +18,7 @@ func GetHandler(c Container) http.HandlerFunc {
 			session.FlashData
 		}
 		data.Flashes = session.MustGetFlashes(c, w, r)
-		baseData, err := message.GetMessageData(r.Context(), c.Queries().ListNewestMessages, message.FetchLimit)
+		baseData, err := message.GetMessageData(r.Context(), c.Querier().ListNewestMessages, message.FetchLimit)
 		if err != nil {
 			log.Println(err)
 			data.Flashes = append(data.Flashes, session.NewErrorFlash("Failed to fetch messages"))

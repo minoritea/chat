@@ -25,7 +25,7 @@ func PostHandler(c Container) http.HandlerFunc {
 			return
 		}
 
-		_, err := c.Queries().CreateMessage(r.Context(), database.CreateMessageParams{
+		_, err := c.Querier().CreateMessage(r.Context(), database.CreateMessageParams{
 			ID:        database.NewID(),
 			UserID:    user.FromContext(r.Context()).ID,
 			Message:   message,
@@ -95,7 +95,7 @@ func GetMoreHandler(c Container) http.HandlerFunc {
 }
 
 func getMessagesDataBeforeID(ctx context.Context, c Container, beforeID string) (data Data, err error) {
-	data, err = message.GetMessageStreamData(ctx, c.Queries().ListMessagesBeforeID, database.ListMessagesBeforeIDParams{
+	data, err = message.GetMessageStreamData(ctx, c.Querier().ListMessagesBeforeID, database.ListMessagesBeforeIDParams{
 		ID:    beforeID,
 		Limit: message.FetchLimit,
 	})
@@ -109,7 +109,7 @@ func getMessagesDataBeforeID(ctx context.Context, c Container, beforeID string) 
 }
 
 func getMessagesDataAfterID(ctx context.Context, c Container, afterID string) (data Data, err error) {
-	data, err = message.GetMessageStreamData(ctx, c.Queries().ListMessagesAfterID, database.ListMessagesAfterIDParams{
+	data, err = message.GetMessageStreamData(ctx, c.Querier().ListMessagesAfterID, database.ListMessagesAfterIDParams{
 		ID:    afterID,
 		Limit: message.FetchLimit,
 	})
@@ -124,7 +124,7 @@ func getMessagesDataAfterID(ctx context.Context, c Container, afterID string) (d
 }
 
 func getOldestMessagesData(ctx context.Context, c Container) (data Data, err error) {
-	data, err = message.GetMessageStreamData(ctx, c.Queries().ListOldestMessages, message.FetchLimit)
+	data, err = message.GetMessageStreamData(ctx, c.Querier().ListOldestMessages, message.FetchLimit)
 	if err != nil {
 		return data, err
 	}
