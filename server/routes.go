@@ -13,7 +13,7 @@ import (
 
 func NewRouter(c Container) chi.Router {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	r.Use(Logger)
 	r.Use(middleware.Recoverer)
 	r.Get("/", withMiddlewares(requireSession(c))(home.GetHandler(c)))
 	r.Get("/messages", withMiddlewares(requireSession(c))(message.GetHandler(c)))
