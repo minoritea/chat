@@ -1,0 +1,50 @@
+/* 26px is sum of padding-top and padding-bottom of body defined in sakura.css */
+.container {
+  height: calc(100svh - 26px);
+	display: grid;
+	grid-template-rows: minmax(0, 1fr) minmax(8rem, 10svh);
+}
+
+#messages {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	height: auto;
+}
+
+.form-container {
+	text-align: right;
+	padding-top: 2rem;
+}
+
+form {
+	display: grid;
+	grid-template-columns: auto min(10rem);
+}
+
+input[type=reset] {
+	display: none;
+}
+
+input[type=text] {
+	width: 100%;
+}
+
+.message {
+	margin-bottom: 1rem;
+	margin-right: 2rem;
+}
+
+.message > .account {
+	font-size: 1.2rem;
+	font-weight: bold;
+}
+
+.message > .body {
+	font-size: 1.2rem;
+}
+
+.message > .created-at {
+	text-align: right;
+	font-size: 0.8rem;
+	color: #999;
+}

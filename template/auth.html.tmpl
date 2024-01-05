@@ -4,6 +4,8 @@
 	<title>Chat</title>
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura.css" type="text/css">
+	<link rel="stylesheet" href="/css/auth.css" type="text/css">
+	<link rel="stylesheet" href="/css/flash.css" type="text/css">
 	<script type="module">
 		import 'https://cdn.skypack.dev/@hotwired/turbo@v7.3.0'
 		import { Application } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
@@ -15,12 +17,11 @@
 </head>
 <body>
 	{{template "flash.html.tmpl" .Flashes}}
-	<div class="container" style="padding-top: 10rem">
+	<div class="container">
 		<form action="/auth" method="post">
 			<input
 				type="submit"
 				name="auth"
-				style="font-size: 2rem; padding: 1rem"
 				value="Sign in with GitHub">
 		</form>
 	</div>

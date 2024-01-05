@@ -39,6 +39,7 @@ watch:
 		-p '**/*.go' \
 		-p 'template/*.tmpl' \
 		-p 'asset/js/*.js' \
+		-p 'asset/css/*.css' \
 		-i '**/_test.go' \
 		-i '**/.*' \
 		-- go run main.go

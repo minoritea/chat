@@ -1,17 +1,12 @@
 {{if .}}
-<div
-	class="flash-container"
-	style="position: fixed; top: 0; left: 0; width: 100%; z-index: 1000">
+<div class="flash-container">
 	{{range $index, $flash := .}}
 		{{ if eq $flash.Type "error" }}
 			<div 
 				class="flash-box"
 				data-controller="flash"
-				data-flash-index-value="{{$index}}"
-				style="background-color: #f9f9f9; width: 50%; padding: 1rem; margin: 1rem auto; border: 2px solid #c82c61; border-radius: 0.5rem;">
-				<button
-					data-action="click->flash#close"
-					style="dsiplay: block; float: right">
+				data-flash-index-value="{{$index}}">
+				<button data-action="click->flash#close">
 					&times;
 				</button>
 				{{$flash.Message}}

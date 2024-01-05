@@ -4,6 +4,8 @@
 	<title>Chat</title>
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura.css" type="text/css">
+	<link rel="stylesheet" href="/css/home.css" type="text/css">
+	<link rel="stylesheet" href="/css/flash.css" type="text/css">
 	<script type="module">
 		import 'https://cdn.skypack.dev/@hotwired/turbo@v7.3.0'
 		import { Application } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
@@ -19,23 +21,20 @@
 </head>
 <body>
 	{{template "flash.html.tmpl" .Flashes}}
-	{{/* 26px is sum of padding-top and padding-bottom of body defined in sakura.css */}}
-	<div class="container" style="height: calc(100svh - 26px); display: grid; grid-template-rows: minmax(0, 1fr) minmax(8rem, 10svh)">
+	<div class="container">
 		<div
 			id="messages"
-			style="overflow-y: scroll; overflow-x: hidden; height: auto;"
 			data-controller="message"
 			data-action="scroll->message#scroll turbo:submit-end@document->message#afterSubmit">
 			{{ template "messages.stream.tmpl" . }}
 		</div>
-		<div style="text-align: right; padding-top: 2rem">
+		<div class="form-container">
 			<form
 				data-controller="form"
-				style="display: grid; grid-template-columns: auto min(10rem);"
 				data-action="turbo:submit-end@document->form#reset"
 				action="/messages" method="post">
-				<input type="reset" style="display: none" data-form-target="reset">
-				<input type="text" name="message" placeholder="Message" style="width:100%" autocomplete="off" data-form-target="textInput">
+				<input type="reset" data-form-target="reset">
+				<input type="text" name="message" placeholder="Message" autocomplete="off" data-form-target="textInput">
 				<input type="submit" value="Send">
 			</form>
 		</div>
