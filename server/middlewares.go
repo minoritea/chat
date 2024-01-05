@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
 )
