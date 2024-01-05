@@ -38,11 +38,11 @@
 
 			connect() {
 				this.#scrollToBottom()
-				this.intervalId = setInterval(() => Turbo.visit('/messages/more'), 5 * 1000)
+				this.intervalId = setInterval(() => this.#loadNewMessages(), 5 * 1000)
 			}
 
 			disconnect() {
-				this.intervalId != null && clearInterval(this.intervalId)
+				clearInterval(this.intervalId)
 			}
 
 			moreTargetConnected(element) {
@@ -137,7 +137,7 @@
 			style="overflow-y: scroll; overflow-x: hidden; height: auto;"
 			data-controller="messages"
 			data-action="scroll->messages#scroll turbo:submit-end@document->messages#afterSubmit">
-			{{ template "messages.tmpl" . }}
+			{{ template "messages.stream.tmpl" . }}
 		</div>
 		<div style="text-align: right; padding-top: 2rem">
 			<form

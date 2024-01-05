@@ -26,6 +26,7 @@ func GetHandler(c Container) http.HandlerFunc {
 			return
 		}
 		data.Data = baseData
+		data.Action = "prepend"
 		data.IsTerminal = len(data.Messages) < 20
 		c.Renderer().RenderOkHTML(w, "home", data)
 	})

@@ -32,7 +32,7 @@ func TestGetMessageData(t *testing.T) {
 		t.Fatalf("len(data) = %d, want %d", len(data.Messages), len(messages))
 	}
 	for i, m := range data.Messages {
-		want := messages[len(messages)-i-1]
+		want := messages[i]
 		if m.GetID() != want.id {
 			t.Errorf("data[%d].ID = %s, want %s", i, m.GetID(), want.id)
 		}

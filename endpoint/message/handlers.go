@@ -14,7 +14,7 @@ import (
 )
 
 type Container = resource.Container
-type Data = message.StreamData
+type Data = message.Data
 
 func PostHandler(c Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +87,6 @@ func GetMoreHandler(c Container) http.HandlerFunc {
 	renderer := c.Renderer()
 	return func(w http.ResponseWriter, r *http.Request) {
 		var data Data
-		data.TargetID = "messages"
 		data.Action = "append"
 		data.MightHaveMore = true
 		renderer.RenderStream(w, "messages", data, http.StatusOK)
@@ -95,21 +94,20 @@ func GetMoreHandler(c Container) http.HandlerFunc {
 }
 
 func getMessagesDataBeforeID(ctx context.Context, c Container, beforeID string) (data Data, err error) {
-	data, err = message.GetMessageStreamData(ctx, c.Querier().ListMessagesBeforeID, database.ListMessagesBeforeIDParams{
+	data, err = message.GetMessageData(ctx, c.Querier().ListMessagesBeforeID, database.ListMessagesBeforeIDParams{
 		ID:    beforeID,
 		Limit: message.FetchLimit,
 	})
 	if err != nil {
 		return data, err
 	}
-	data.Action = "before"
-	data.TargetID = beforeID
+	data.Action = "prepend"
 	data.IsTerminal = len(data.Messages) < message.FetchLimit
 	return data, nil
 }
 
 func getMessagesDataAfterID(ctx context.Context, c Container, afterID string) (data Data, err error) {
-	data, err = message.GetMessageStreamData(ctx, c.Querier().ListMessagesAfterID, database.ListMessagesAfterIDParams{
+	data, err = message.GetMessageData(ctx, c.Querier().ListMessagesAfterID, database.ListMessagesAfterIDParams{
 		ID:    afterID,
 		Limit: message.FetchLimit,
 	})
@@ -117,21 +115,20 @@ func getMessagesDataAfterID(ctx context.Context, c Container, afterID string) (d
 		return data, err
 	}
 
-	data.TargetID = afterID
-	data.Action = "after"
+	data.Action = "append"
+	data.Reverse()
 	data.MightHaveMore = len(data.Messages) == message.FetchLimit
 	return data, nil
 }
 
 func getOldestMessagesData(ctx context.Context, c Container) (data Data, err error) {
-	data, err = message.GetMessageStreamData(ctx, c.Querier().ListOldestMessages, message.FetchLimit)
+	data, err = message.GetMessageData(ctx, c.Querier().ListOldestMessages, message.FetchLimit)
 	if err != nil {
 		return data, err
 	}
 
 	data.IsTerminal = true
 	data.Action = "prepend"
-	data.TargetID = "messages"
 	data.MightHaveMore = len(data.Messages) == message.FetchLimit
 	return data, nil
 }

@@ -1,5 +1,24 @@
-<turbo-stream action="{{.Action}}" target="{{.TargetID}}">
+{{if .IsTerminal }}
+<turbo-stream action="prepend" target="messages">
 	<template>
-	{{ template "messages.tmpl" .}}
+		<div id="terminal" data-messages-target="terminal" hidden></div>
 	</template>
 </turbo-stream>
+{{end}}
+
+{{$action := .Action}}
+{{range .Messages}}
+<turbo-stream action="{{$action}}" target="messages">
+	<template>
+		{{ template "message.tmpl" . }}
+	</template>
+</turbo-stream>
+{{end}}
+
+{{ if .MightHaveMore }}
+<turbo-stream action="append" target="messages">
+	<template>
+		<div id="more-messages" data-messages-target="more" hidden></div>
+	</template>
+</turbo-stream>
+{{ end }}
