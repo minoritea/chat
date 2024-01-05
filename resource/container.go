@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/gorilla/sessions"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/minoritea/chat/config"
 	"github.com/minoritea/chat/database"
 	"github.com/minoritea/chat/template"
@@ -18,7 +17,7 @@ type Container struct {
 }
 
 func New(conf config.Config) (*Container, error) {
-	db, err := sql.Open("sqlite3", conf.DatabasePath)
+	db, err := sql.Open(conf.DatabaseDriver, conf.DatabasePath)
 	if err != nil {
 		return nil, err
 	}
