@@ -5,17 +5,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
 )
-
-func withMiddlewares(middlewares ...func(http.Handler) http.Handler) func(http.Handler) http.HandlerFunc {
-	return func(next http.Handler) http.HandlerFunc {
-		return chi.Chain(middlewares...).Handler(next).ServeHTTP
-	}
-}
 
 func requireSession(c Container) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
