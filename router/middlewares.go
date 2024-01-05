@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
 )
@@ -33,4 +34,12 @@ func requireSession(c Container) func(http.Handler) http.Handler {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		})
 	}
+}
+
+func Logger(next http.Handler) http.Handler {
+	return middleware.RequestLogger(
+		&middleware.DefaultLogFormatter{
+			Logger: log.New(log.Writer(), "", log.LstdFlags),
+		},
+	)(next)
 }
