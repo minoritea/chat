@@ -24,5 +24,6 @@ func NewRouter(c Container) chi.Router {
 	r.Get("/auth/callback", auth.GetCallbackHandler(c))
 	r.Get("/js/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
 	r.Get("/css/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
+	r.Get("/favicon.ico", http.FileServer(http.FS(asset.FS)).ServeHTTP)
 	return r
 }
