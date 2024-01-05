@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/minoritea/chat/config"
 	"github.com/minoritea/chat/resource"
-	"github.com/minoritea/chat/server"
+	"github.com/minoritea/chat/router"
 )
 
 func run() error {
@@ -25,7 +26,8 @@ func run() error {
 		return err
 	}
 
-	return server.ListenAndServe(*c)
+	r := router.New(*c)
+	return http.ListenAndServe(conf.BindAddr(), r)
 }
 
 func main() {

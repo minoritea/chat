@@ -1,4 +1,4 @@
-package server
+package router
 
 import (
 	"net/http"
@@ -9,9 +9,12 @@ import (
 	"github.com/minoritea/chat/endpoint/auth"
 	"github.com/minoritea/chat/endpoint/home"
 	"github.com/minoritea/chat/endpoint/message"
+	"github.com/minoritea/chat/resource"
 )
 
-func NewRouter(c Container) chi.Router {
+type Container = resource.Container
+
+func New(c Container) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
