@@ -1,7 +1,8 @@
 .PHONY: migrate migrate-dry-run \
 	generate-queries generate-query-interfaces generate-query-mock \
 	generate-session-mock \
-	watch
+	watch \
+	chat.cgi
 
 migrate:
 	go run github.com/sqldef/sqldef/cmd/sqlite3def@v0.16.13 ./chat.db < ./database/schema.sql
