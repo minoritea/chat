@@ -87,12 +87,11 @@
 			}
 
 			#scrollToBottom() {
-				const bottom = Array.from(
-					this.element.querySelectorAll('.message')).
-					slice(-1)[0]
+				const bottom = this.messageTargets.slice(-1)[0]
 				if (bottom) {
 					bottom.scrollIntoView({ block: 'end' })
 				}
+				this.scrollReachedToBottom = true
 			}
 
 			async #loadPastMessages() {
