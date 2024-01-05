@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/minoritea/chat/config"
 	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/server"
@@ -14,6 +15,7 @@ import (
 
 func run() error {
 	var conf config.Config
+	conf.DatabaseDriver = "sqlite3"
 	flag.StringVar(&conf.Host, "host", "localhost", "host")
 	flag.StringVar(&conf.Port, "port", "8080", "port")
 	flag.StringVar(&conf.GithubClientID, "github-client-id", os.Getenv("GITHUB_CLIENT_ID"), "github client id")

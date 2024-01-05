@@ -12,6 +12,7 @@ type Config struct {
 	GithubClientSecret string
 	SessionSecret      string
 	DatabasePath       string
+	DatabaseDriver     string
 }
 
 func (c Config) BindAddr() string {

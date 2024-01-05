@@ -9,6 +9,7 @@ import (
 	"github.com/minoritea/chat/config"
 	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/server"
+	_ "modernc.org/sqlite"
 )
 
 var (
@@ -24,6 +25,7 @@ func run() error {
 	conf.GithubClientSecret = GithubClientSecret
 	conf.SessionSecret = SessionSecret
 	conf.DatabasePath = DatabasePath
+	conf.DatabaseDriver = "sqlite"
 
 	c, err := resource.New(conf)
 	if err != nil {

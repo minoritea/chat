@@ -1,3 +1,4 @@
-chat.db
 .envrc
+chat
+chat.db
 chat.cgi
