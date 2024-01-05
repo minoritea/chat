@@ -5,126 +5,16 @@
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura.css" type="text/css">
 	<script type="module">
-		import * as Turbo from 'https://cdn.skypack.dev/@hotwired/turbo@v7.3.0'
-		import { Application, Controller } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
+		import 'https://cdn.skypack.dev/@hotwired/turbo@v7.3.0'
+		import { Application } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
+		import { FlashController } from '/js/flash_controller.js'
+		import { FormController } from '/js/form_controller.js'
+		import { MessageController } from '/js/message_controller.js'
 
-		class FlashController extends Controller {
-			static values = { index: Number }
-
-			connect() {
-				const index = this.indexValue + 1
-				setTimeout(() => this.element.remove(), index * 10 * 1000)
-			}
-
-			close(event) {
-				this.element.remove()
-			}
-		}
-
-		class FormController extends Controller {
-			static targets = ['reset', 'textInput']
-
-			connect() {
-				this.textInputTarget.focus()
-			}
-
-			reset(ev) {
-				this.resetTarget.click()
-			}
-		}
-
-		class MessagesController extends Controller {
-			static targets = ['message', 'more', 'terminal']
-
-			connect() {
-				this.#scrollToBottom()
-				this.intervalId = setInterval(() => this.#loadNewMessages(), 5 * 1000)
-			}
-
-			disconnect() {
-				clearInterval(this.intervalId)
-			}
-
-			moreTargetConnected(element) {
-				element.remove()
-				this.#loadNewMessages()
-			}
-
-			terminalTargetConnected() {
-				this.isTerminal = true
-			}
-
-			messageTargetConnected() {
-				if (this.scrollReachedToBottom) {
-					this.#scrollToBottom()
-				}
-			}
-
-			afterSubmit() {
-				this.#scrollToBottom()
-			}
-
-			async scroll() {
-				this.scrollReachedToBottom = this.#isLastMessageLastVisibleRow()
-
-				if (!this.isTerminal && this.element.scrollTop == 0) {
-					this.isScrollLoading = true
-					await this.#loadPastMessages()
-					const offsetTop = this.messageTargets.length > 0 ?
-						this.messageTargets[0].offsetTop :
-						0
-					this.element.scrollTop = offsetTop
-					this.isScrollLoading = false
-				}
-			}
-
-			#isLastMessageLastVisibleRow() {
-				const lastMessage = this.messageTargets.slice(-1)[0]
-				if (!lastMessage) {
-					return false
-				}
-				return this.element.scrollTop + this.element.clientHeight >= lastMessage.offsetTop
-			}
-
-			#scrollToBottom() {
-				const bottom = this.messageTargets.slice(-1)[0]
-				if (bottom) {
-					bottom.scrollIntoView({ block: 'end' })
-				}
-				this.scrollReachedToBottom = true
-			}
-
-			async #loadPastMessages() {
-				if (this.messageTargets.length > 0) {
-					const id = this.messageTargets[0].id
-					const res = await fetch('/messages?before_id=' + id)
-					const html = await res.text()
-					Turbo.renderStreamMessage(html)
-				} else {
-					const res = await fetch('/messages')
-					const html = await res.text()
-					Turbo.renderStreamMessage(html)
-				}
-			}
-
-			async #loadNewMessages() {
-				if (this.messageTargets.length > 0) {
-					const id = this.messageTargets.slice(-1)[0].id
-					const res = await fetch('/messages?after_id=' + id)
-					const html = await res.text()
-					Turbo.renderStreamMessage(html)
-				} else {
-					const res = await fetch('/messages')
-					const html = await res.text()
-					Turbo.renderStreamMessage(html)
-				}
-			}
-		}
-
-		const application = Application.start()
+		const application = globalThis.application = Application.start()
 		application.register('flash', FlashController)
 		application.register('form', FormController)
-		application.register('messages', MessagesController)
+		application.register('message', MessageController)
 	</script>
 </head>
 <body>
@@ -134,8 +24,8 @@
 		<div
 			id="messages"
 			style="overflow-y: scroll; overflow-x: hidden; height: auto;"
-			data-controller="messages"
-			data-action="scroll->messages#scroll turbo:submit-end@document->messages#afterSubmit">
+			data-controller="message"
+			data-action="scroll->message#scroll turbo:submit-end@document->message#afterSubmit">
 			{{ template "messages.stream.tmpl" . }}
 		</div>
 		<div style="text-align: right; padding-top: 2rem">

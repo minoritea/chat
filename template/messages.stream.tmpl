@@ -1,7 +1,7 @@
 {{if .IsTerminal }}
 <turbo-stream action="prepend" target="messages">
 	<template>
-		<div id="terminal" data-messages-target="terminal" hidden></div>
+		<div id="terminal" data-message-target="terminal" hidden></div>
 	</template>
 </turbo-stream>
 {{end}}
@@ -18,7 +18,7 @@
 {{ if .MightHaveMore }}
 <turbo-stream action="append" target="messages">
 	<template>
-		<div id="more-messages" data-messages-target="more" hidden></div>
+		<div id="more-messages" data-message-target="more" hidden></div>
 	</template>
 </turbo-stream>
 {{ end }}

@@ -37,7 +37,8 @@ generate-session-mock:
 watch:
 	go run github.com/makiuchi-d/arelo@latest \
 		-p '**/*.go' \
-		-p '**/*.tmpl' \
+		-p 'template/*.tmpl' \
+		-p 'asset/js/*.js' \
 		-i '**/_test.go' \
 		-i '**/.*' \
 		-- go run main.go

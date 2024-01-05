@@ -5,22 +5,11 @@
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura.css" type="text/css">
 	<script type="module">
-		import { Application, Controller } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
+		import 'https://cdn.skypack.dev/@hotwired/turbo@v7.3.0'
+		import { Application } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
+		import { FlashController } from '/js/flash_controller.js'
 
-		class FlashController extends Controller {
-			static values = { index: Number }
-
-			connect() {
-				const index = this.indexValue + 1
-				setTimeout(() => this.element.remove(), index * 10 * 1000)
-			}
-
-			close(event) {
-				this.element.remove()
-			}
-		}
-
-		const application = Application.start()
+		const application = globalThis.application = Application.start()
 		application.register('flash', FlashController)
 	</script>
 </head>

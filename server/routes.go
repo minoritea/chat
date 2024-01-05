@@ -1,8 +1,11 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/minoritea/chat/asset"
 	"github.com/minoritea/chat/endpoint/auth"
 	"github.com/minoritea/chat/endpoint/home"
 	"github.com/minoritea/chat/endpoint/message"
@@ -19,5 +22,6 @@ func NewRouter(c Container) chi.Router {
 	r.Get("/auth", auth.GetHandler(c))
 	r.Post("/auth", auth.PostHandler(c))
 	r.Get("/auth/callback", auth.GetCallbackHandler(c))
+	r.Get("/js/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
 	return r
 }
