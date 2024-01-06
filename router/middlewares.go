@@ -29,7 +29,7 @@ func requireSession(c Container) func(http.Handler) http.Handler {
 	}
 }
 
-func Logger(next http.Handler) http.Handler {
+func logger(next http.Handler) http.Handler {
 	return middleware.RequestLogger(
 		&middleware.DefaultLogFormatter{
 			Logger: log.New(log.Writer(), "", log.LstdFlags),

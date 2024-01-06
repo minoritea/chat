@@ -12,9 +12,12 @@ import (
 	"github.com/minoritea/chat/router"
 )
 
+var version = "0.0.0"
+
 func run() error {
 	var conf config.Config
 	conf.DatabaseDriver = "sqlite3"
+	conf.Version = version
 	flag.StringVar(&conf.Host, "host", "localhost", "host")
 	flag.StringVar(&conf.Port, "port", "8080", "port")
 	flag.StringVar(&conf.GithubClientID, "github-client-id", os.Getenv("GITHUB_CLIENT_ID"), "github client id")

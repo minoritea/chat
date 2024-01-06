@@ -18,8 +18,12 @@ type Container = resource.Container
 func GetHandler(c Container) http.HandlerFunc {
 	renderer := c.Renderer()
 	return func(w http.ResponseWriter, r *http.Request) {
-		var data session.FlashData
+		var data struct {
+			session.FlashData
+			AssetPath string
+		}
 		data.Flashes = session.MustGetFlashes(c, w, r)
+		data.AssetPath = c.Config().AssetPath()
 		renderer.RenderOkHTML(w, "auth", data)
 	}
 }

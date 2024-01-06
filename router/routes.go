@@ -16,8 +16,9 @@ type Container = resource.Container
 
 func New(c Container) http.Handler {
 	r := chi.NewRouter()
-	r.Use(Logger)
+	r.Use(logger)
 	r.Use(middleware.Recoverer)
+
 	r.Group(func(r chi.Router) {
 		r.Use(requireSession(c))
 		r.Get("/", home.GetHandler(c))
@@ -25,11 +26,16 @@ func New(c Container) http.Handler {
 		r.Get("/messages/more", message.GetMoreHandler(c))
 		r.Post("/messages", message.PostHandler(c))
 	})
+
 	r.Get("/auth", auth.GetHandler(c))
 	r.Post("/auth", auth.PostHandler(c))
 	r.Get("/auth/callback", auth.GetCallbackHandler(c))
-	r.Get("/js/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
-	r.Get("/css/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
+
+	r.Route(c.Config().AssetPath(), func(r chi.Router) {
+		r.Use(middleware.PathRewrite(c.Config().AssetPath(), ""))
+		r.Get("/js/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
+		r.Get("/css/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
+	})
 	r.Get("/favicon.ico", http.FileServer(http.FS(asset.FS)).ServeHTTP)
 	return r
 }

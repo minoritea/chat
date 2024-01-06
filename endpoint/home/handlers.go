@@ -16,7 +16,9 @@ func GetHandler(c Container) http.HandlerFunc {
 		var data struct {
 			message.Data
 			session.FlashData
+			AssetPath string
 		}
+		data.AssetPath = c.Config().AssetPath()
 		data.Flashes = session.MustGetFlashes(c, w, r)
 		baseData, err := message.GetMessageData(r.Context(), c.Querier().ListNewestMessages, message.FetchLimit)
 		if err != nil {

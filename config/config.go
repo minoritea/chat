@@ -13,6 +13,7 @@ type Config struct {
 	SessionSecret      string
 	DatabasePath       string
 	DatabaseDriver     string
+	Version            string
 }
 
 func (c Config) BindAddr() string {
@@ -26,4 +27,8 @@ func (c Config) GithubOAuth2Config() oauth2.Config {
 		Scopes:       []string{"user:email"},
 		Endpoint:     github.Endpoint,
 	}
+}
+
+func (c Config) AssetPath() string {
+	return "/asset-" + c.Version
 }
