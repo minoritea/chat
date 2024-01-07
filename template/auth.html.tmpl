@@ -11,14 +11,14 @@
 		import { Application } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
 		import { FlashController } from '{{ .AssetPath }}/js/flash_controller.js'
 
-		const application = globalThis.application = Application.start()
+		const application = (globalThis.application ||= Application.start())
 		application.register('flash', FlashController)
 	</script>
 </head>
 <body>
 	{{template "flash.html.tmpl" .Flashes}}
 	<div class="container">
-		<form action="/auth" method="post">
+		<form action="/auth" method="post" data-turbo="false">
 			<input
 				type="submit"
 				name="auth"

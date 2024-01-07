@@ -13,7 +13,7 @@
 		import { FormController } from '{{ .AssetPath }}/js/form_controller.js'
 		import { MessageController } from '{{ .AssetPath }}/js/message_controller.js'
 
-		const application = globalThis.application = Application.start()
+		const application = (globalThis.application ||= Application.start())
 		application.register('flash', FlashController)
 		application.register('form', FormController)
 		application.register('message', MessageController)
