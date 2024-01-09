@@ -46,4 +46,4 @@ watch:
 		-- go run main.go
 
 chat.cgi:
-	go build -o chat.cgi -tags cgi -ldflags "-s -w -X 'main.GithubClientID=${GITHUB_CLIENT_ID}' -X 'main.GithubClientSecret=${GITHUB_CLIENT_SECRET}' -X 'main.SessionSecret=${SESSION_SECRET}' -X 'main.DatabasePath=${DATABASE_PATH}'" -trimpath
+	go build -o chat.cgi -tags cgi -ldflags "-s -w -X 'main.GithubClientID=${GITHUB_CLIENT_ID}' -X 'main.GithubClientSecret=${GITHUB_CLIENT_SECRET}' -X 'main.SessionSecret=${SESSION_SECRET}' -X 'main.DatabasePath=${DATABASE_PATH}' -X 'main.version=$(shell git rev-parse --short HEAD)'" -trimpath
