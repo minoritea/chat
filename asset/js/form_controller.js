@@ -4,7 +4,8 @@ export class FormController extends Controller {
 	static targets = ['reset', 'textInput']
 
 	connect() {
-		this.textInputTarget.focus()
+		document.documentElement.clientWidth >= 684 &&
+			this.textInputTarget.focus()
 	}
 
 	reset() {
