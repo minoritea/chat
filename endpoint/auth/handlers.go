@@ -54,14 +54,15 @@ func GetCallbackHandler(c Container) http.HandlerFunc {
 		}
 
 		code := r.URL.Query().Get("code")
-		token, err := oauth2Config.Exchange(r.Context(), code)
+		ctx := context.WithValue(r.Context(), oauth2.HTTPClient, client)
+		token, err := oauth2Config.Exchange(ctx, code)
 		if err != nil {
 			log.Println(err)
 			session.RedirectWithErrorFlash(c, w, r, "/", "Failed to exchange oauth2 code")
 			return
 		}
 
-		githubUser, err := getGithubUser(r.Context(), token)
+		githubUser, err := getGithubUser(ctx, token)
 		if err != nil {
 			log.Println(err)
 			session.RedirectWithErrorFlash(c, w, r, "/", "Failed to get github user")
@@ -85,6 +86,10 @@ func GetCallbackHandler(c Container) http.HandlerFunc {
 
 type githubUser struct {
 	Login string `json:"login"`
+}
+
+var client = &http.Client{
+	Transport: transport,
 }
 
 func getGithubUser(ctx context.Context, token *oauth2.Token) (*githubUser, error) {
