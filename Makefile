@@ -1,7 +1,8 @@
 .PHONY: migrate migrate-dry-run \
 	generate-queries generate-query-interfaces generate-query-mock \
 	generate-session-mock \
-	watch
+	watch \
+	build
 
 migrate:
 	go run github.com/sqldef/sqldef/cmd/sqlite3def@v0.16.13 ./chat.db < ./database/schema.sql
@@ -43,3 +44,6 @@ watch:
 		-i '**/_test.go' \
 		-i '**/.*' \
 		-- go run main.go
+
+build:
+	go build -ldflags "-s -w -X 'main.version=$(shell git rev-parse --short HEAD)'" -trimpath
