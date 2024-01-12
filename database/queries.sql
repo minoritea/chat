@@ -6,13 +6,13 @@ RETURNING *;
 SELECT * FROM users WHERE account = ?;
 
 -- name: CreateSession :one
-INSERT INTO sessions (id, user_id) VALUES (?, ?)
+INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)
 RETURNING *;
 
 -- name: GetUserBySessionID :one
 SELECT users.*
 FROM users JOIN sessions ON sessions.user_id = users.id
-WHERE sessions.id = ?;
+WHERE sessions.id = ? and sessions.expires_at > current_timestamp;
 
 -- name: CreateMessage :one
 INSERT INTO messages (id, user_id, message, created_at) VALUES (?, ?, ?, ?)

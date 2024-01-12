@@ -22,8 +22,13 @@ func GetHandler(c Container) http.HandlerFunc {
 			session.FlashData
 			AssetPath string
 		}
-		data.Flashes = session.MustGetFlashes(c, w, r)
+		s, err := session.Get(c, r)
+		if err != nil {
+			s = session.MustNew(c, r)
+		}
+		data.Flashes = session.GetFlashes(s)
 		data.AssetPath = c.Config().AssetPath()
+		session.MustSave(s, r, w)
 		renderer.RenderOkHTML(w, "auth", data)
 	}
 }
@@ -34,10 +39,7 @@ func PostHandler(c Container) http.HandlerFunc {
 		state := ulid.Make().String()
 		s := session.MustGet(c, r)
 		s.Values["oauth2state"] = state
-		err := s.Save(r, w)
-		if err != nil {
-			panic(err)
-		}
+		session.MustSave(s, r, w)
 		http.Redirect(w, r, oauth2Config.AuthCodeURL(state), http.StatusSeeOther)
 	}
 }
@@ -46,39 +48,43 @@ func GetCallbackHandler(c Container) http.HandlerFunc {
 	oauth2Config := c.Config().GithubOAuth2Config()
 	return func(w http.ResponseWriter, r *http.Request) {
 		state := r.URL.Query().Get("state")
-		sessionState, ok := session.MustGet(c, r).Values["oauth2state"].(string)
+		s := session.MustGet(c, r)
+		sessionState, ok := s.Values["oauth2state"].(string)
 		if !ok || sessionState != state {
 			log.Println("invalid oauth2 state")
-			session.RedirectWithErrorFlash(c, w, r, "/", "Invalid oauth2 state")
+			session.RedirectWithErrorFlash(w, r, s, "/", "Invalid oauth2 state")
 			return
 		}
+		delete(s.Values, "oauth2state")
 
 		code := r.URL.Query().Get("code")
 		token, err := oauth2Config.Exchange(r.Context(), code)
 		if err != nil {
 			log.Println(err)
-			session.RedirectWithErrorFlash(c, w, r, "/", "Failed to exchange oauth2 code")
+			session.RedirectWithErrorFlash(w, r, s, "/", "Failed to exchange oauth2 code")
 			return
 		}
 
 		githubUser, err := getGithubUser(r.Context(), token)
 		if err != nil {
 			log.Println(err)
-			session.RedirectWithErrorFlash(c, w, r, "/", "Failed to get github user")
+			session.RedirectWithErrorFlash(w, r, s, "/", "Failed to get github user")
 			return
 		}
 		sessionUser, err := user.FindOrCreateUser(r.Context(), c, githubUser.Login)
 		if err != nil {
 			log.Println(err)
-			session.RedirectWithErrorFlash(c, w, r, "/", "Internal server error")
+			session.RedirectWithErrorFlash(w, r, s, "/", "Internal server error")
 			return
 		}
-		err = session.StoreNewSession(r.Context(), c, w, r, sessionUser.ID)
+		dbSession, err := session.PerpetuateSession(r.Context(), c, sessionUser.ID)
 		if err != nil {
 			log.Println(err)
-			session.RedirectWithErrorFlash(c, w, r, "/", "Internal server error")
+			session.RedirectWithErrorFlash(w, r, s, "/", "Internal server error")
 			return
 		}
+		session.SetSessionID(s, dbSession.ID)
+		session.MustSave(s, r, w)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }

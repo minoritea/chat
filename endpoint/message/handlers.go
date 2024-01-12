@@ -18,10 +18,11 @@ type Data = message.Data
 
 func PostHandler(c Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		s := session.MustGet(c, r)
 		message := r.PostFormValue("message")
 		if message == "" {
 			log.Println("message is empty")
-			session.RedirectWithErrorFlash(c, w, r, "/", "Message is empty")
+			session.RedirectWithErrorFlash(w, r, s, "/", "Message is empty")
 			return
 		}
 
@@ -33,9 +34,11 @@ func PostHandler(c Container) http.HandlerFunc {
 		})
 		if err != nil {
 			log.Println(err)
-			session.RedirectWithErrorFlash(c, w, r, "/", "Internal Server Error")
+			session.RedirectWithErrorFlash(w, r, s, "/", "Internal Server Error")
 			return
 		}
+
+		session.MustSave(s, r, w)
 
 		http.Redirect(w, r, "/messages/more", http.StatusSeeOther)
 	}
@@ -43,6 +46,8 @@ func PostHandler(c Container) http.HandlerFunc {
 
 func GetHandler(c Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		s := session.MustGet(c, r)
+
 		var (
 			data Data
 			err  error
@@ -56,28 +61,30 @@ func GetHandler(c Container) http.HandlerFunc {
 			data, err = getOldestMessagesData(r.Context(), c)
 			if err != nil {
 				log.Println(err)
-				session.RedirectWithErrorFlash(c, w, r, "/", "Internal Server Error")
+				session.RedirectWithErrorFlash(w, r, s, "/", "Internal Server Error")
 				return
 			}
 		case [2]bool{true, true}: // multiple query parameters are set
 			log.Println("multiple query parameters are set")
-			session.RedirectWithErrorFlash(c, w, r, "/", "Failed to fetch messages")
+			session.RedirectWithErrorFlash(w, r, s, "/", "Failed to fetch messages")
 			return
 		case [2]bool{true, false}: // only before_id is set
 			data, err = getMessagesDataBeforeID(r.Context(), c, beforeID)
 			if err != nil {
 				log.Println(err)
-				session.RedirectWithErrorFlash(c, w, r, "/", "Internal Server Error")
+				session.RedirectWithErrorFlash(w, r, s, "/", "Internal Server Error")
 				return
 			}
 		case [2]bool{false, true}: // only after_id is set
 			data, err = getMessagesDataAfterID(r.Context(), c, afterID)
 			if err != nil {
 				log.Println(err)
-				session.RedirectWithErrorFlash(c, w, r, "/", "Internal Server Error")
+				session.RedirectWithErrorFlash(w, r, s, "/", "Internal Server Error")
 				return
 			}
 		}
+
+		session.MustSave(s, r, w)
 
 		c.Renderer().RenderStream(w, "messages", data, http.StatusOK)
 	}

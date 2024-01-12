@@ -1,7 +1,6 @@
 package router
 
 import (
-	"errors"
 	"log"
 	"net/http"
 
@@ -13,18 +12,22 @@ import (
 func requireSession(c Container) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			sessionUser, err := session.GetUserFromSession(r.Context(), c, r)
-			if err == nil {
-				ctx := user.SetToContext(r.Context(), sessionUser)
-				next.ServeHTTP(w, r.WithContext(ctx))
-				return
-			}
-			log.Println(err)
-			if errors.Is(err, session.SessionNotFound) {
+			w.Header().Add("Cache-Control", "private")
+			s, err := session.Get(c, r)
+			if err != nil {
+				log.Println(err)
 				http.Redirect(w, r, "/auth", http.StatusSeeOther)
 				return
 			}
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			sessionUser, err := session.GetUserFromSession(r.Context(), c, s)
+			if err != nil {
+				log.Println(err)
+				http.Redirect(w, r, "/auth", http.StatusSeeOther)
+				return
+			}
+			ctx := user.SetToContext(r.Context(), sessionUser)
+			next.ServeHTTP(w, r.WithContext(ctx))
+			return
 		})
 	}
 }

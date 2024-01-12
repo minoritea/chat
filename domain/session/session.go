@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/sessions"
 	"github.com/minoritea/chat/database"
@@ -25,26 +26,21 @@ type QuerierContainer interface {
 	Querier() database.Querier
 }
 
-type StoreNewSessionContainer interface {
-	SessionStoreContainer
-	QuerierContainer
+func PerpetuateSession(ctx context.Context, c QuerierContainer, userID string) (database.Session, error) {
+	return c.Querier().CreateSession(ctx, database.CreateSessionParams{
+		ID:        database.NewID(),
+		UserID:    userID,
+		ExpiresAt: time.Now().AddDate(1, 0, 0),
+	})
 }
 
-func StoreNewSession(ctx context.Context, c StoreNewSessionContainer, w http.ResponseWriter, r *http.Request, userID string) error {
-	q := c.Querier()
-	session, err := q.CreateSession(ctx, database.CreateSessionParams{
-		ID:     database.NewID(),
-		UserID: userID,
-	})
-	if err != nil {
-		return err
-	}
-	store, err := c.SessionStore().New(r, SessionName)
-	if err != nil {
-		return err
-	}
-	store.Values["session_id"] = session.ID
-	return store.Save(r, w)
+func GetSessionID(session *sessions.Session) (string, bool) {
+	sessionID, ok := session.Values["session_id"].(string)
+	return sessionID, ok
+}
+
+func SetSessionID(session *sessions.Session, sessionID string) {
+	session.Values["session_id"] = sessionID
 }
 
 var SessionNotFound = errors.New("session not found")
@@ -54,12 +50,8 @@ type GetUserFromSessionContainer interface {
 	QuerierContainer
 }
 
-func GetUserFromSession(ctx context.Context, c GetUserFromSessionContainer, r *http.Request) (*User, error) {
-	store, err := c.SessionStore().Get(r, SessionName)
-	if err != nil {
-		return nil, errors.Join(SessionNotFound, err)
-	}
-	sessionID, ok := store.Values["session_id"].(string)
+func GetUserFromSession(ctx context.Context, c QuerierContainer, session *sessions.Session) (*User, error) {
+	sessionID, ok := GetSessionID(session)
 	if !ok {
 		return nil, SessionNotFound
 	}
@@ -71,8 +63,28 @@ func GetUserFromSession(ctx context.Context, c GetUserFromSessionContainer, r *h
 	return &user, err
 }
 
-func MustGet(c SessionStoreContainer, r *http.Request) *sessions.Session {
+func Get(c SessionStoreContainer, r *http.Request) (*sessions.Session, error) {
 	session, err := c.SessionStore().Get(r, SessionName)
+	if err != nil {
+		return nil, errors.Join(SessionNotFound, err)
+	}
+	return session, nil
+}
+
+func MustGet(c SessionStoreContainer, r *http.Request) *sessions.Session {
+	session, err := Get(c, r)
+	if err != nil {
+		log.Panic(err)
+	}
+	return session
+}
+
+func New(c SessionStoreContainer, r *http.Request) (*sessions.Session, error) {
+	return c.SessionStore().New(r, SessionName)
+}
+
+func MustNew(c SessionStoreContainer, r *http.Request) *sessions.Session {
+	session, err := New(c, r)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -88,53 +100,29 @@ func NewErrorFlash(message string) Flash {
 	return Flash{Message: message, Type: "error"}
 }
 
-func AddFlash(c SessionStoreContainer, w http.ResponseWriter, r *http.Request, flash Flash) error {
-	session, err := c.SessionStore().Get(r, SessionName)
-	if err != nil {
-		return err
-	}
-	session.AddFlash(flash)
-	return session.Save(r, w)
-}
-
-func MustAddFlash(c SessionStoreContainer, w http.ResponseWriter, r *http.Request, flash Flash) {
-	err := AddFlash(c, w, r, flash)
-	if err != nil {
-		log.Panic(err)
-	}
-}
-
-func GetFlashes(c SessionStoreContainer, w http.ResponseWriter, r *http.Request) ([]Flash, error) {
-	session, err := c.SessionStore().Get(r, SessionName)
-	if err != nil {
-		return nil, err
-	}
+func GetFlashes(session *sessions.Session) []Flash {
 	flashes := session.Flashes()
 	if len(flashes) == 0 {
-		return nil, nil
-	}
-	err = session.Save(r, w)
-	if err != nil {
-		return nil, err
+		return nil
 	}
 	messages := make([]Flash, len(flashes))
 	for i, f := range flashes {
 		messages[i] = f.(Flash)
 	}
-	return messages, nil
-}
-
-func MustGetFlashes(c SessionStoreContainer, w http.ResponseWriter, r *http.Request) []Flash {
-	flashes, err := GetFlashes(c, w, r)
-	if err != nil {
-		log.Panic(err)
-	}
-	return flashes
+	return messages
 }
 
 type FlashData struct{ Flashes []Flash }
 
-func RedirectWithErrorFlash(c SessionStoreContainer, w http.ResponseWriter, r *http.Request, url, message string) {
-	MustAddFlash(c, w, r, NewErrorFlash(message))
+func RedirectWithErrorFlash(w http.ResponseWriter, r *http.Request, session *sessions.Session, url, message string) {
+	session.AddFlash(NewErrorFlash(message))
+	MustSave(session, r, w)
 	http.Redirect(w, r, url, http.StatusSeeOther)
+}
+
+func MustSave(session *sessions.Session, r *http.Request, w http.ResponseWriter) {
+	err := session.Save(r, w)
+	if err != nil {
+		panic(err)
+	}
 }

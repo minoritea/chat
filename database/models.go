@@ -16,8 +16,9 @@ type Message struct {
 }
 
 type Session struct {
-	ID     string
-	UserID string
+	ID        string
+	UserID    string
+	ExpiresAt time.Time
 }
 
 type User struct {

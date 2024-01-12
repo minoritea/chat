@@ -40,19 +40,20 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 }
 
 const createSession = `-- name: CreateSession :one
-INSERT INTO sessions (id, user_id) VALUES (?, ?)
-RETURNING id, user_id
+INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)
+RETURNING id, user_id, expires_at
 `
 
 type CreateSessionParams struct {
-	ID     string
-	UserID string
+	ID        string
+	UserID    string
+	ExpiresAt time.Time
 }
 
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error) {
-	row := q.db.QueryRowContext(ctx, createSession, arg.ID, arg.UserID)
+	row := q.db.QueryRowContext(ctx, createSession, arg.ID, arg.UserID, arg.ExpiresAt)
 	var i Session
-	err := row.Scan(&i.ID, &i.UserID)
+	err := row.Scan(&i.ID, &i.UserID, &i.ExpiresAt)
 	return i, err
 }
 
@@ -87,7 +88,7 @@ func (q *Queries) GetUserByAccount(ctx context.Context, account string) (User, e
 const getUserBySessionID = `-- name: GetUserBySessionID :one
 SELECT users.id, users.account
 FROM users JOIN sessions ON sessions.user_id = users.id
-WHERE sessions.id = ?
+WHERE sessions.id = ? and sessions.expires_at > current_timestamp
 `
 
 func (q *Queries) GetUserBySessionID(ctx context.Context, id string) (User, error) {
