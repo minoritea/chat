@@ -6,7 +6,7 @@ CREATE TABLE users (
 CREATE TABLE sessions (
 	id TEXT PRIMARY KEY,
 	user_id TEXT NOT NULL,
-	expires_at DATETIME NOT NULL DEFAULT '2025-01-01 00:00:00'
+	expires_at DATETIME NOT NULL
 );
 
 CREATE TABLE messages (
