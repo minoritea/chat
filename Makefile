@@ -1,6 +1,5 @@
 .PHONY: migrate migrate-dry-run \
 	generate-queries generate-query-interfaces generate-query-mock \
-	generate-session-mock \
 	watch \
 	build
 
@@ -28,12 +27,6 @@ generate-query-mock:
 		-source database/interface.go \
 		-destination test/mock/database/querier.go \
 		-package database
-
-generate-session-mock:
-	go run go.uber.org/mock/mockgen@v0.4.0 \
-		-destination test/mock/session/store.go \
-		-package session \
-		github.com/gorilla/sessions Store
 
 watch:
 	go run github.com/makiuchi-d/arelo@latest \
