@@ -53,7 +53,7 @@ type GetUserFromSessionContainer interface {
 func GetUserFromSession(ctx context.Context, c QuerierContainer, session *sessions.Session) (*User, error) {
 	sessionID, ok := GetSessionID(session)
 	if !ok {
-		return nil, SessionNotFound
+		return nil, errors.Join(SessionNotFound, errors.New("session id not found"))
 	}
 	q := c.Querier()
 	user, err := q.GetUserBySessionID(ctx, sessionID)

@@ -33,3 +33,4 @@ func (c Container) Querier() database.Querier    { return database.New(c.db) }
 func (c Container) Renderer() *template.Renderer { return c.renderer }
 func (c Container) SessionStore() sessions.Store { return c.sessionStore }
 func (c Container) Config() config.Config        { return c.config }
+func (c Container) DB() *sql.DB                  { return c.db }
