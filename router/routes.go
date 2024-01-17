@@ -20,7 +20,10 @@ func New(c Container) http.Handler {
 	r.Use(middleware.Recoverer)
 
 	r.Group(func(r chi.Router) {
-		r.Use(requireSession(c))
+		r.Use(
+			requireSession(c),
+			middleware.NoCache,
+		)
 		r.Get("/", home.GetHandler(c))
 		r.Get("/messages", message.GetHandler(c))
 		r.Get("/messages/more", message.GetMoreHandler(c))

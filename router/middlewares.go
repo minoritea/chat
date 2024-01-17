@@ -12,7 +12,6 @@ import (
 func requireSession(c Container) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Cache-Control", "private")
 			s, err := session.Get(c, r)
 			if err != nil {
 				log.Println(err)
