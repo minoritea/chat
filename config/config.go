@@ -6,6 +6,8 @@ type Config struct {
 	GithubClientID     string
 	GithubClientSecret string
 	SessionSecret      string
+	CSRFSecret         string
+	SecureCookie       bool
 	DatabasePath       string
 	DatabaseDriver     string
 	Version            string

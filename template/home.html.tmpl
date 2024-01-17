@@ -36,6 +36,7 @@
 				data-controller="form"
 				data-action="turbo:submit-end@document->form#reset"
 				action="/messages" method="post">
+				{{ .CSRFField }}
 				<input type="reset" data-form-target="reset">
 				<input type="text" name="message" placeholder="Message" autocomplete="off" data-form-target="textInput">
 				<input type="submit" value="Send">

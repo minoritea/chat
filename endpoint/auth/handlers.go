@@ -1,9 +1,11 @@
 package auth
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 
+	"github.com/gorilla/csrf"
 	"github.com/minoritea/chat/domain/auth"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
@@ -18,7 +20,9 @@ func GetHandler(c Container) http.HandlerFunc {
 		var data struct {
 			session.FlashData
 			AssetPath string
+			CSRFField template.HTML
 		}
+		data.CSRFField = csrf.TemplateField(r)
 		s, err := session.Get(c, r)
 		if err != nil {
 			s = session.MustNew(c, r)

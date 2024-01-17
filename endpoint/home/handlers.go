@@ -1,9 +1,11 @@
 package home
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 
+	"github.com/gorilla/csrf"
 	"github.com/minoritea/chat/domain/message"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/resource"
@@ -17,7 +19,9 @@ func GetHandler(c Container) http.HandlerFunc {
 			message.Data
 			session.FlashData
 			AssetPath string
+			CSRFField template.HTML
 		}
+		data.CSRFField = csrf.TemplateField(r)
 		data.AssetPath = c.Config().AssetPath()
 		s := session.MustGet(c, r)
 		data.Flashes = session.GetFlashes(s)

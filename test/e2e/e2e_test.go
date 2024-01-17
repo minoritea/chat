@@ -138,6 +138,7 @@ func setupServer() (*resource.Container, *httptest.Server, error) {
 		SessionSecret:  "test",
 		DatabaseDriver: "sqlite3",
 		DatabasePath:   ":memory:",
+		CSRFSecret:     "test",
 	}
 	container, err := resource.New(conf)
 	if err != nil {

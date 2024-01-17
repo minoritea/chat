@@ -20,6 +20,7 @@ func New(c Container) http.Handler {
 		middleware.RealIP,
 		logger,
 		middleware.Recoverer,
+		csrf(c),
 	)
 
 	r.Group(func(r chi.Router) {

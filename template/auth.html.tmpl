@@ -22,6 +22,7 @@
 	{{template "flash.html.tmpl" .Flashes}}
 	<div class="container">
 		<form action="/auth" method="post" data-turbo="false">
+			{{ .CSRFField }}
 			<input
 				type="submit"
 				name="auth"

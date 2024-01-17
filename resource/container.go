@@ -2,6 +2,7 @@ package resource
 
 import (
 	"database/sql"
+	"net/http"
 
 	"github.com/gorilla/sessions"
 	"github.com/minoritea/chat/config"
@@ -26,6 +27,9 @@ func New(conf config.Config) (*Container, error) {
 		return nil, err
 	}
 	store := sessions.NewCookieStore([]byte(conf.SessionSecret))
+	store.Options.Secure = conf.SecureCookie
+	store.Options.HttpOnly = true
+	store.Options.SameSite = http.SameSiteLaxMode
 	return &Container{config: conf, db: db, renderer: renderer, sessionStore: store}, nil
 }
 
