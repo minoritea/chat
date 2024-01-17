@@ -16,8 +16,11 @@ type Container = resource.Container
 
 func New(c Container) http.Handler {
 	r := chi.NewRouter()
-	r.Use(logger)
-	r.Use(middleware.Recoverer)
+	r.Use(
+		middleware.RealIP,
+		logger,
+		middleware.Recoverer,
+	)
 
 	r.Group(func(r chi.Router) {
 		r.Use(
