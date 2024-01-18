@@ -20,24 +20,30 @@ func New(c Container) http.Handler {
 		middleware.RealIP,
 		logger,
 		middleware.Recoverer,
-		csrf(c),
 	)
 
 	r.Group(func(r chi.Router) {
 		r.Use(
-			requireSession(c),
+			csrf(c),
 			middleware.NoCache,
 		)
-		r.Get("/", home.GetHandler(c))
-		r.Get("/messages", message.GetHandler(c))
-		r.Get("/messages/more", message.GetMoreHandler(c))
-		r.Post("/messages", message.PostHandler(c))
+
+		// routes that require session
+		r.Group(func(r chi.Router) {
+			r.Use(requireSession(c))
+			r.Get("/", home.GetHandler(c))
+			r.Get("/messages", message.GetHandler(c))
+			r.Get("/messages/more", message.GetMoreHandler(c))
+			r.Post("/messages", message.PostHandler(c))
+		})
+
+		// routes that don't require session
+		r.Get("/auth", auth.GetHandler(c))
+		r.Post("/auth", auth.PostHandler(c))
+		r.Get("/auth/callback", auth.GetCallbackHandler(c))
 	})
 
-	r.Get("/auth", auth.GetHandler(c))
-	r.Post("/auth", auth.PostHandler(c))
-	r.Get("/auth/callback", auth.GetCallbackHandler(c))
-
+	// static assets
 	r.Route(c.Config().AssetPath(), func(r chi.Router) {
 		r.Use(middleware.PathRewrite(c.Config().AssetPath(), ""))
 		r.Get("/js/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
