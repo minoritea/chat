@@ -45,7 +45,10 @@ func New(c Container) http.Handler {
 
 	// static assets
 	r.Route(c.Config().AssetPath(), func(r chi.Router) {
-		r.Use(middleware.PathRewrite(c.Config().AssetPath(), ""))
+		r.Use(
+			sourceMap,
+			middleware.PathRewrite(c.Config().AssetPath(), ""),
+		)
 		r.Get("/js/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
 		r.Get("/css/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
 	})

@@ -3,6 +3,7 @@ package router
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5/middleware"
 	gorillacsrf "github.com/gorilla/csrf"
@@ -44,4 +45,13 @@ func csrf(c Container) func(http.Handler) http.Handler {
 	return gorillacsrf.Protect(
 		[]byte(c.Config().CSRFSecret),
 		gorillacsrf.Secure(c.Config().SecureCookie))
+}
+
+func sourceMap(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, ".js") {
+			w.Header().Set("SourceMap", r.URL.Path+".map")
+		}
+		next.ServeHTTP(w, r)
+	})
 }
