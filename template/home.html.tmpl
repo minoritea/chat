@@ -4,25 +4,12 @@
 	<title>Chat</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura.css" type="text/css" crossorigin>
+	<link rel="stylesheet" href="{{ .AssetPath }}/css/reset.css" type="text/css">
+	<link rel="stylesheet" href="{{ .AssetPath }}/css/sakura.css" type="text/css">
 	<link rel="stylesheet" href="{{ .AssetPath }}/css/home.css" type="text/css">
 	<link rel="stylesheet" href="{{ .AssetPath }}/css/flash.css" type="text/css">
-	<link rel="modulepreload" href="https://cdn.skypack.dev/@hotwired/turbo@v7.3.0?min" crossorigin>
-	<link rel="modulepreload" href="https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2?min" crossorigin>
-	<script type="module">
-		import 'https://cdn.skypack.dev/@hotwired/turbo@v7.3.0'
-		import { Application } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
-		import { FlashController } from '{{ .AssetPath }}/js/flash_controller.js'
-		import { FormController } from '{{ .AssetPath }}/js/form_controller.js'
-		import { MessageController, NextMessageController, MessageFrameController } from '{{ .AssetPath }}/js/message_controller.js'
-
-		const application = (globalThis.application ||= Application.start())
-		application.register('flash', FlashController)
-		application.register('form', FormController)
-		application.register('message', MessageController)
-		application.register('next-message', NextMessageController)
-		application.register('message-frame', MessageFrameController)
-	</script>
+	{{ template "importmap.tmpl" . }}
+	<script type="module" src="{{ .AssetPath }}/js/home.js"></script>
 </head>
 <body>
 	{{template "flash.html.tmpl" .Flashes}}

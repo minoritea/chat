@@ -1,4 +1,4 @@
-import {Controller} from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
+import {Controller} from './stimulus.js'
 
 export class FlashController extends Controller {
 	static values = {index: Number}

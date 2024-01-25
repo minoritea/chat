@@ -1,0 +1,1 @@
+{ "dependencies": { "@hotwired/stimulus": "^3.2.2", "@hotwired/turbo": "^7.3.0", "sakura.css": "^1.5.0", "stimulus-use": "^0.52.2" } }

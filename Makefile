@@ -1,7 +1,13 @@
 .PHONY: migrate migrate-dry-run \
 	generate-queries generate-query-interfaces generate-query-mock \
 	watch \
+	bun bun-install \
+	bundle-js bundle-css \
+	bundle-stimulus bundle-turbo bundle-stimulus-use \
+	bundle-sakura-css \
 	build
+
+.SILENT: bun
 
 migrate:
 	go run github.com/sqldef/sqldef/cmd/sqlite3def@v0.16.13 ./chat.db < ./database/schema.sql
@@ -40,3 +46,39 @@ watch:
 
 build:
 	go build -ldflags "-s -w -X 'main.version=$(shell git rev-parse --short HEAD)'" -trimpath
+
+bun:
+	command -v bun > /dev/null || (echo "bun is required to build frontend assets" && exit 1)
+
+bun-install: bun
+	bun install
+
+node_modules: bun-install
+
+bundle-stimulus: node_modules
+	bun build node_modules/@hotwired/stimulus/dist/stimulus.js \
+		--outdir ./asset/js/ \
+		--sourcemap=external \
+		--minify
+
+bundle-turbo: node_modules
+	bun build node_modules/@hotwired/turbo/dist/turbo.es2017-esm.js \
+		--outdir ./asset/js/ \
+		--sourcemap=external \
+		--entry-naming=turbo.[ext] \
+		--minify
+
+bundle-stimulus-use: node_modules
+	bun build node_modules/stimulus-use/dist/index.js \
+		--outdir ./asset/js/ \
+		--sourcemap=external \
+		--entry-naming=stimulus-use.[ext] \
+		--external @hotwired/stimulus \
+		--minify
+
+bundle-sakura-css: node_modules
+	cp node_modules/sakura.css/css/sakura.css ./asset/css/sakura.css
+
+bundle-js: bundle-stimulus bundle-turbo bundle-stimulus-use
+bundle-css: bundle-sakura-css
+bundle-assets: bundle-js bundle-css

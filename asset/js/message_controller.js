@@ -1,6 +1,6 @@
-import {Controller} from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
-import * as Turbo from 'https://cdn.skypack.dev/@hotwired/turbo@v7.3.0'
-import {IntersectionController} from 'https://unpkg.com/stimulus-use@0.52.2?module'
+import {Controller} from './stimulus.js'
+import * as Turbo from './turbo.js'
+import {IntersectionController} from './stimulus-use.js'
 
 export class MessageController extends IntersectionController {
 	appear() {

@@ -1,3 +1,4 @@
 .envrc
 chat
 chat.db
+node_modules
