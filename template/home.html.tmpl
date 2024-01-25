@@ -14,12 +14,14 @@
 		import { Application } from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
 		import { FlashController } from '{{ .AssetPath }}/js/flash_controller.js'
 		import { FormController } from '{{ .AssetPath }}/js/form_controller.js'
-		import { MessageController } from '{{ .AssetPath }}/js/message_controller.js'
+		import { MessageController, NextMessageController, MessageFrameController } from '{{ .AssetPath }}/js/message_controller.js'
 
 		const application = (globalThis.application ||= Application.start())
 		application.register('flash', FlashController)
 		application.register('form', FormController)
 		application.register('message', MessageController)
+		application.register('next-message', NextMessageController)
+		application.register('message-frame', MessageFrameController)
 	</script>
 </head>
 <body>
@@ -27,8 +29,12 @@
 	<div class="container">
 		<div
 			id="messages"
-			data-controller="message"
-			data-action="scroll->message#scroll turbo:submit-end@document->message#afterSubmit">
+			data-controller="message-frame"
+			data-action="
+				message:messageAppeared->message-frame#messageAppeared
+				message:messageDisappeared->message-frame#messageDisappeared
+				next-message:loadNewMessages->message-frame#loadNewMessages
+				turbo:submit-end@document->message-frame#afterSubmit">
 			{{ template "messages.stream.tmpl" . }}
 		</div>
 		<div class="form-container">

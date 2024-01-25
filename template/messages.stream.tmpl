@@ -18,7 +18,10 @@
 {{ if .MightHaveMore }}
 <turbo-stream action="append" target="messages">
 	<template>
-		<div id="more-messages" data-message-target="more" hidden></div>
+		<div id="more-messages" 
+			data-controller="next-message"
+			data-message-frame-target="more"
+			></div>
 	</template>
 </turbo-stream>
 {{ end }}

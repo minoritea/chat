@@ -1,8 +1,29 @@
 import {Controller} from 'https://cdn.skypack.dev/@hotwired/stimulus@v3.2.2'
 import * as Turbo from 'https://cdn.skypack.dev/@hotwired/turbo@v7.3.0'
+import {IntersectionController} from 'https://unpkg.com/stimulus-use@0.52.2?module'
 
-export class MessageController extends Controller {
+export class MessageController extends IntersectionController {
+	appear() {
+		this.element.appeared = true
+		this.dispatch('messageAppeared')
+	}
+
+	disappear() {
+		this.element.appeared = false
+		this.dispatch('messageDisappeared')
+	}
+}
+
+export class NextMessageController extends IntersectionController {
+	appear() {
+		this.dispatch('loadNewMessages')
+		this.element.remove()
+	}
+}
+
+export class MessageFrameController extends Controller {
 	static targets = ['message', 'more', 'terminal']
+	appearedMessages = []
 
 	connect() {
 		this.#scrollToBottom()
@@ -13,16 +34,37 @@ export class MessageController extends Controller {
 		clearInterval(this.intervalId)
 	}
 
-	moreTargetConnected(element) {
-		element.remove()
+	messageAppeared() {
+		this.#visibleMessagesChanged()
+	}
+
+	messageDisappeared() {
+		this.#visibleMessagesChanged()
+	}
+
+	#visibleMessagesChanged() {
+		this.appearedMessages = this.messageTargets.filter(m => m.appeared)
+		this.scrollReachedToBottom = this.#isLastMessageLastVisibleRow()
+		if (
+			!this.hasTerminalTarget
+			&& this.#isFirstMessageFirstVisibleRow()
+			&& !this.loadingPastMessages
+		) {
+			this.#loadPastMessages()
+		}
+	}
+
+	loadNewMessages() {
 		this.#loadNewMessages()
 	}
 
-	terminalTargetConnected() {
-		this.isTerminal = true
+	messageTargetConnected() {
+		if (this.scrollReachedToBottom) {
+			this.#scrollToBottom()
+		}
 	}
 
-	messageTargetConnected() {
+	moreTargetConnected() {
 		if (this.scrollReachedToBottom) {
 			this.#scrollToBottom()
 		}
@@ -32,30 +74,26 @@ export class MessageController extends Controller {
 		this.#scrollToBottom()
 	}
 
-	async scroll() {
-		this.scrollReachedToBottom = this.#isLastMessageLastVisibleRow()
-
-		if (!this.isTerminal && this.element.scrollTop == 0) {
-			this.isScrollLoading = true
-			await this.#loadPastMessages()
-			const offsetTop = this.messageTargets.length > 0 ?
-				this.messageTargets[0].offsetTop :
-				0
-			this.element.scrollTop = offsetTop
-			this.isScrollLoading = false
-		}
-	}
-
 	#isLastMessageLastVisibleRow() {
-		const lastMessage = this.messageTargets.slice(-1)[0]
-		if (!lastMessage) {
+		const lastMessage = this.messageTargets.slice(-1)[0],
+			lastAppearedMessage = this.appearedMessages.slice(-1)[0]
+		if (!lastMessage || !lastAppearedMessage) {
 			return false
 		}
-		return this.element.scrollTop + this.element.clientHeight >= lastMessage.offsetTop
+		return lastMessage.id === lastAppearedMessage.id
+	}
+
+	#isFirstMessageFirstVisibleRow() {
+		const firstMessage = this.messageTargets[0],
+			firstAppearedMessage = this.appearedMessages[0]
+		if (!firstMessage || !firstAppearedMessage) {
+			return false
+		}
+		return firstMessage.id === firstAppearedMessage.id
 	}
 
 	#scrollToBottom() {
-		const bottom = this.messageTargets.slice(-1)[0]
+		const bottom = this.hasMoreTarget ? this.moreTarget : this.messageTargets.slice(-1)[0]
 		if (bottom) {
 			bottom.scrollIntoView({block: 'end'})
 		}
@@ -63,15 +101,22 @@ export class MessageController extends Controller {
 	}
 
 	async #loadPastMessages() {
-		if (this.messageTargets.length > 0) {
-			const id = this.messageTargets[0].id
-			const res = await fetch('/messages?before_id=' + id)
-			const html = await res.text()
-			Turbo.renderStreamMessage(html)
-		} else {
-			const res = await fetch('/messages')
-			const html = await res.text()
-			Turbo.renderStreamMessage(html)
+		this.loadingPastMessages = true
+		try {
+			if (this.messageTargets.length > 0) {
+				const id = this.messageTargets[0].id
+				const res = await fetch('/messages?before_id=' + id)
+				const html = await res.text()
+				Turbo.renderStreamMessage(html)
+			} else {
+				const res = await fetch('/messages')
+				const html = await res.text()
+				Turbo.renderStreamMessage(html)
+			}
+		} catch (e) {
+			throw e
+		} finally {
+			this.loadingPastMessages = false
 		}
 	}
 
