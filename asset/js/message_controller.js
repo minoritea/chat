@@ -1,27 +1,7 @@
 import {Controller} from './stimulus.js'
 import * as Turbo from './turbo.js'
-import {IntersectionController} from './stimulus-use.js'
 
-export class MessageController extends IntersectionController {
-	appear() {
-		this.element.appeared = true
-		this.dispatch('messageAppeared')
-	}
-
-	disappear() {
-		this.element.appeared = false
-		this.dispatch('messageDisappeared')
-	}
-}
-
-export class NextMessageController extends IntersectionController {
-	appear() {
-		this.dispatch('loadNewMessages')
-		this.element.remove()
-	}
-}
-
-export class MessageFrameController extends Controller {
+export class MessageController extends Controller {
 	static targets = ['message', 'more', 'terminal']
 	appearedMessages = []
 
@@ -42,22 +22,6 @@ export class MessageFrameController extends Controller {
 		this.#visibleMessagesChanged()
 	}
 
-	#visibleMessagesChanged() {
-		this.appearedMessages = this.messageTargets.filter(m => m.appeared)
-		this.scrollReachedToBottom = this.#isLastMessageLastVisibleRow()
-		if (
-			!this.hasTerminalTarget
-			&& this.#isFirstMessageFirstVisibleRow()
-			&& !this.loadingPastMessages
-		) {
-			this.#loadPastMessages()
-		}
-	}
-
-	loadNewMessages() {
-		this.#loadNewMessages()
-	}
-
 	messageTargetConnected() {
 		if (this.scrollReachedToBottom) {
 			this.#scrollToBottom()
@@ -71,7 +35,26 @@ export class MessageFrameController extends Controller {
 	}
 
 	afterSubmit() {
-		this.#scrollToBottom()
+		if (this.scrollReachedToBottom) {
+			this.#scrollToBottom()
+		}
+	}
+
+	#visibleMessagesChanged() {
+		this.appearedMessages = this.messageTargets.filter(m => m.appeared)
+		this.scrollReachedToBottom = this.#isLastMessageLastVisibleRow()
+		if (
+			!this.hasTerminalTarget
+			&& this.#isFirstMessageFirstVisibleRow()
+			&& !this.loadingPastMessages
+		) {
+			this.#loadPastMessages()
+		}
+
+		if (this.hasMoreTarget && this.moreTarget.appeared) {
+			this.moreTarget.remove()
+			this.#loadNewMessages()
+		}
 	}
 
 	#isLastMessageLastVisibleRow() {

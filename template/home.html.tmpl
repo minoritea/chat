@@ -16,11 +16,10 @@
 	<div class="container">
 		<div
 			id="messages"
-			data-controller="message-frame"
+			data-controller="message"
 			data-action="
-				message:messageAppeared->message-frame#messageAppeared
-				message:messageDisappeared->message-frame#messageDisappeared
-				next-message:loadNewMessages->message-frame#loadNewMessages
+				scrolled-element:appeared->message#messageAppeared
+				scrolled-element:disappeared->message#messageDisappeared
 				turbo:submit-end@document->message-frame#afterSubmit">
 			{{ template "messages.stream.tmpl" . }}
 		</div>
