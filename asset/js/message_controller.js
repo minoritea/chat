@@ -14,14 +14,6 @@ export class MessageController extends Controller {
 		clearInterval(this.intervalId)
 	}
 
-	messageAppeared() {
-		this.#visibleMessagesChanged()
-	}
-
-	messageDisappeared() {
-		this.#visibleMessagesChanged()
-	}
-
 	messageTargetConnected() {
 		if (this.scrollReachedToBottom) {
 			this.#scrollToBottom()
@@ -40,7 +32,7 @@ export class MessageController extends Controller {
 		}
 	}
 
-	#visibleMessagesChanged() {
+	visibleMessagesChanged() {
 		this.appearedMessages = this.messageTargets.filter(m => m.appeared)
 		this.scrollReachedToBottom = this.#isLastMessageLastVisibleRow()
 		if (

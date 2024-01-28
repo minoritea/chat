@@ -18,8 +18,6 @@
 			id="messages"
 			data-controller="message"
 			data-action="
-				scrolled-element:appeared->message#messageAppeared
-				scrolled-element:disappeared->message#messageDisappeared
 				turbo:submit-end@document->message-frame#afterSubmit">
 			{{ template "messages.stream.tmpl" . }}
 		</div>

@@ -1,13 +1,15 @@
 import {IntersectionController} from './stimulus-use.js'
 
 export class ScrolledElementController extends IntersectionController {
+	static outlets = ['message']
+
 	appear() {
 		this.element.appeared = true
-		this.dispatch('appeared')
+		this.messageOutlet.visibleMessagesChanged()
 	}
 
 	disappear() {
 		this.element.appeared = false
-		this.dispatch('disappeared')
+		this.messageOutlet.visibleMessagesChanged()
 	}
 }
