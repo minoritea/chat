@@ -1,28 +1,27 @@
+// Package auth provides HTTP handlers for authentication.
 package auth
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 
-	"github.com/gorilla/csrf"
 	"github.com/minoritea/chat/domain/auth"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
 	"github.com/minoritea/chat/resource"
 )
 
+// Container is an alias for resource.Container.
 type Container = resource.Container
 
+// GetHandler returns a handler for GET /auth.
 func GetHandler(c Container) http.HandlerFunc {
 	renderer := c.Renderer()
 	return func(w http.ResponseWriter, r *http.Request) {
 		var data struct {
 			session.FlashData
 			AssetPath string
-			CSRFField template.HTML
 		}
-		data.CSRFField = csrf.TemplateField(r)
 		s, err := session.Get(c, r)
 		if err != nil {
 			s = session.MustNew(c, r)
@@ -34,15 +33,18 @@ func GetHandler(c Container) http.HandlerFunc {
 	}
 }
 
+// PostHandler returns a handler for POST /auth.
 func PostHandler(c Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s := session.MustGet(c, r)
 		o := auth.New(c).SetNewState(s)
 		session.MustSave(s, r, w)
+		//nolint:gosec
 		http.Redirect(w, r, o.AuthCodeURL(), http.StatusSeeOther)
 	}
 }
 
+// GetCallbackHandler returns a handler for GET /auth/callback.
 func GetCallbackHandler(c Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		state := r.URL.Query().Get("state")

@@ -33,10 +33,10 @@ func TestFindOrCreateUser(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		querier := dbmock.NewMockQuerier(ctrl)
 		c := containerstub.NewQuerierContainer(querier)
-		querier.EXPECT().GetUserByAccount(ctx, "account").Return(database.User{}, database.RecordNotFound)
+		querier.EXPECT().GetUserByAccount(ctx, "account").Return(database.User{}, database.ErrRecordNotFound)
 		var u database.User
-		querier.EXPECT().CreateUser(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, params database.CreateUserParams) (database.User, error) {
-			u = database.User{ID: params.ID, Account: params.Account}
+		querier.EXPECT().CreateUser(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, params database.CreateUserParams) (database.User, error) {
+			u = database.User(params)
 			return u, nil
 		})
 		foundUser, err := user.FindOrCreateUser(ctx, c, "account")

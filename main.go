@@ -1,3 +1,4 @@
+// Package main is the root package of the chat application.
 package main
 
 import (
@@ -5,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/minoritea/chat/config"
@@ -22,8 +24,6 @@ func run() error {
 	flag.StringVar(&conf.Port, "port", "8080", "port")
 	flag.StringVar(&conf.GithubClientID, "github-client-id", os.Getenv("GITHUB_CLIENT_ID"), "github client id")
 	flag.StringVar(&conf.GithubClientSecret, "github-client-secret", os.Getenv("GITHUB_CLIENT_SECRET"), "github client secret")
-	flag.StringVar(&conf.CSRFSecret, "csrf-secret", os.Getenv("CSRF_SECRET"), "csrf secret")
-	flag.BoolVar(&conf.SecureCookie, "secure-cookie", false, "secure cookie")
 	flag.StringVar(&conf.SessionSecret, "session-secret", os.Getenv("SESSION_SECRET"), "session secret")
 	flag.StringVar(&conf.DatabasePath, "database-path", "./chat.db", "database path")
 	flag.Parse()
@@ -34,7 +34,12 @@ func run() error {
 	}
 
 	r := router.New(*c)
-	return http.ListenAndServe(conf.BindAddr(), r)
+	srv := &http.Server{
+		Addr:              conf.BindAddr(),
+		Handler:           r,
+		ReadHeaderTimeout: 10 * time.Second,
+	}
+	return srv.ListenAndServe()
 }
 
 func main() {

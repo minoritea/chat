@@ -21,7 +21,7 @@ var _ database.IMessage = (*Message)(nil)
 func TestGetMessageData(t *testing.T) {
 	type Param struct{}
 	messages := []Message{{id: "1"}, {id: "2"}, {id: "3"}}
-	query := func(ctx context.Context, param Param) ([]Message, error) {
+	query := func(context.Context, Param) ([]Message, error) {
 		return messages, nil
 	}
 	data, err := message.GetMessageData(context.Background(), query, Param{})

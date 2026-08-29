@@ -1,3 +1,4 @@
+// Package router provides the application's routes and middlewares.
 package router
 
 import (
@@ -6,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5/middleware"
-	gorillacsrf "github.com/gorilla/csrf"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
 )
@@ -28,7 +28,6 @@ func requireSession(c Container) func(http.Handler) http.Handler {
 			}
 			ctx := user.SetToContext(r.Context(), sessionUser)
 			next.ServeHTTP(w, r.WithContext(ctx))
-			return
 		})
 	}
 }
@@ -39,12 +38,6 @@ func logger(next http.Handler) http.Handler {
 			Logger: log.New(log.Writer(), "", log.LstdFlags),
 		},
 	)(next)
-}
-
-func csrf(c Container) func(http.Handler) http.Handler {
-	return gorillacsrf.Protect(
-		[]byte(c.Config().CSRFSecret),
-		gorillacsrf.Secure(c.Config().SecureCookie))
 }
 
 func sourceMap(next http.Handler) http.Handler {

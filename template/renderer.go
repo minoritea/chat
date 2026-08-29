@@ -15,14 +15,17 @@ var (
 	tmplFS embed.FS
 )
 
+// Container provides a *sql.DB.
 type Container interface {
 	GetDB() *sql.DB
 }
 
+// Renderer renders HTML and Turbo Stream responses.
 type Renderer struct {
 	tmpl *template.Template
 }
 
+// NewRenderer returns a new Renderer with parsed templates.
 func NewRenderer() (*Renderer, error) {
 	tmpl := template.New("").Funcs(helpers)
 	tmpl, err := tmpl.ParseFS(tmplFS, "*.tmpl")
@@ -32,6 +35,7 @@ func NewRenderer() (*Renderer, error) {
 	return &Renderer{tmpl: tmpl}, nil
 }
 
+// RenderHTML writes the named HTML template with data and the status code.
 func (r *Renderer) RenderHTML(w http.ResponseWriter, name string, data any, code int) {
 	const suffix = ".html.tmpl"
 	var buf bytes.Buffer
@@ -49,16 +53,19 @@ func (r *Renderer) RenderHTML(w http.ResponseWriter, name string, data any, code
 	}
 }
 
+// RenderOkHTML is like RenderHTML but writes http.StatusOK.
 func (r *Renderer) RenderOkHTML(w http.ResponseWriter, name string, data any) {
 	r.RenderHTML(w, name, data, http.StatusOK)
 }
 
+// CompileHTTPHandler returns a handler that renders the named template with fixed data and the status code.
 func (r *Renderer) CompileHTTPHandler(name string, data any, code int) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		r.RenderHTML(w, name, data, code)
 	}
 }
 
+// RenderStream writes the named Turbo Stream template with data and the status code.
 func (r *Renderer) RenderStream(w http.ResponseWriter, name string, data any, code int) {
 	const suffix = ".stream.tmpl"
 	var buf bytes.Buffer

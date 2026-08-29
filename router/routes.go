@@ -12,23 +12,25 @@ import (
 	"github.com/minoritea/chat/resource"
 )
 
+// Container is an alias for resource.Container.
 type Container = resource.Container
 
+// New returns the application's HTTP handler with all routes registered.
 func New(c Container) http.Handler {
 	r := chi.NewRouter()
 	r.Use(
-		middleware.RealIP,
+		middleware.ClientIPFromHeader("CF-Connecting-IP"),
 		logger,
 		middleware.Recoverer,
+		http.NewCrossOriginProtection().Handler,
 	)
 
 	r.Group(func(r chi.Router) {
 		r.Use(
-			csrf(c),
 			middleware.NoCache,
 		)
 
-		// routes that require session
+		// routes that require a session
 		r.Group(func(r chi.Router) {
 			r.Use(requireSession(c))
 			r.Get("/", home.GetHandler(c))
@@ -37,7 +39,7 @@ func New(c Container) http.Handler {
 			r.Post("/messages", message.PostHandler(c))
 		})
 
-		// routes that don't require session
+		// routes that don't require a session
 		r.Get("/auth", auth.GetHandler(c))
 		r.Post("/auth", auth.PostHandler(c))
 		r.Get("/auth/callback", auth.GetCallbackHandler(c))

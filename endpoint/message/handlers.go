@@ -1,3 +1,4 @@
+// Package message provides HTTP handlers for the /messages endpoints.
 package message
 
 import (
@@ -13,9 +14,13 @@ import (
 	"github.com/minoritea/chat/resource"
 )
 
+// Container is an alias for resource.Container.
 type Container = resource.Container
+
+// Data is an alias for message.Data.
 type Data = message.Data
 
+// PostHandler returns a handler for POST /messages.
 func PostHandler(c Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s := session.MustGet(c, r)
@@ -44,6 +49,8 @@ func PostHandler(c Container) http.HandlerFunc {
 	}
 }
 
+// GetHandler returns a handler for GET /messages.
+// It fetches messages before before_id or after after_id when the query parameter is set.
 func GetHandler(c Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s := session.MustGet(c, r)
@@ -57,14 +64,14 @@ func GetHandler(c Container) http.HandlerFunc {
 		afterID := r.URL.Query().Get("after_id")
 
 		switch [2]bool{beforeID != "", afterID != ""} {
-		case [2]bool{false, false}: // no query parameters are set
+		case [2]bool{false, false}: // no query parameter is set
 			data, err = getOldestMessagesData(r.Context(), c)
 			if err != nil {
 				log.Println(err)
 				session.RedirectWithErrorFlash(w, r, s, "/", "Internal Server Error")
 				return
 			}
-		case [2]bool{true, true}: // multiple query parameters are set
+		case [2]bool{true, true}: // both query parameters are set
 			log.Println("multiple query parameters are set")
 			session.RedirectWithErrorFlash(w, r, s, "/", "Failed to fetch messages")
 			return
@@ -90,9 +97,10 @@ func GetHandler(c Container) http.HandlerFunc {
 	}
 }
 
+// GetMoreHandler returns a handler for GET /messages/more.
 func GetMoreHandler(c Container) http.HandlerFunc {
 	renderer := c.Renderer()
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		var data Data
 		data.Action = "append"
 		data.MightHaveMore = true

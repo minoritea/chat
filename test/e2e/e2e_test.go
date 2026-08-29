@@ -18,13 +18,17 @@ import (
 
 func TestE2E(t *testing.T) {
 	container, server, err := setupServer()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	t.Cleanup(server.Close)
 
 	browser, err := setupBrowser()
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { browser.Close() })
+	t.Cleanup(func() { t.Log(browser.Close()) })
 
 	assertion := playwright.NewPlaywrightAssertions()
 	t.Run("top page requires session and redirects to auth page", func(t *testing.T) {
@@ -42,7 +46,10 @@ func TestE2E(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		res.Finished()
+		if err := res.Finished(); err != nil {
+			t.Fatal(err)
+		}
+
 		err = assertion.Page(page).ToHaveURL(server.URL + "/auth")
 		if err != nil {
 			t.Fatal(err)
@@ -68,7 +75,10 @@ func TestE2E(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		res.Finished()
+		if err := res.Finished(); err != nil {
+			t.Fatal(err)
+		}
+
 		err = assertion.Page(page).ToHaveURL(server.URL + "/")
 		if err != nil {
 			t.Fatal(err)
@@ -99,7 +109,10 @@ func TestE2E(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		res.Finished()
+		if err := res.Finished(); err != nil {
+			t.Fatal(err)
+		}
+
 		err = assertion.Page(page).ToHaveURL(server.URL + "/")
 		if err != nil {
 			t.Fatal(err)
@@ -138,7 +151,6 @@ func setupServer() (*resource.Container, *httptest.Server, error) {
 		SessionSecret:  "test",
 		DatabaseDriver: "sqlite3",
 		DatabasePath:   ":memory:",
-		CSRFSecret:     "test",
 	}
 	container, err := resource.New(conf)
 	if err != nil {
@@ -157,10 +169,13 @@ func setupServer() (*resource.Container, *httptest.Server, error) {
 }
 
 func setupBrowser() (playwright.Browser, error) {
-	playwright.Install(&playwright.RunOptions{
+	err := playwright.Install(&playwright.RunOptions{
 		Browsers: []string{"chromium"},
 		Verbose:  true,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	pw, err := playwright.Run()
 	if err != nil {
@@ -168,7 +183,7 @@ func setupBrowser() (playwright.Browser, error) {
 	}
 
 	return pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(true),
+		Headless: new(true),
 	})
 }
 
@@ -195,8 +210,8 @@ func setSessionToContext(container resource.Container, server *httptest.Server, 
 		pcookies = append(pcookies, playwright.OptionalCookie{
 			Name:   c.Name,
 			Value:  c.Value,
-			Path:   playwright.String("/"),
-			Domain: playwright.String("127.0.0.1"),
+			Path:   new("/"),
+			Domain: new("127.0.0.1"),
 		})
 	}
 

@@ -1,3 +1,4 @@
+// Package resource provides the application's resource container.
 package resource
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/minoritea/chat/template"
 )
 
+// Container holds the application's resources and implements the container interfaces.
 type Container struct {
 	db           *sql.DB
 	renderer     *template.Renderer
@@ -17,6 +19,7 @@ type Container struct {
 	config       config.Config
 }
 
+// New returns a new Container.
 func New(conf config.Config) (*Container, error) {
 	db, err := sql.Open(conf.DatabaseDriver, conf.DatabasePath)
 	if err != nil {
@@ -27,14 +30,22 @@ func New(conf config.Config) (*Container, error) {
 		return nil, err
 	}
 	store := sessions.NewCookieStore([]byte(conf.SessionSecret))
-	store.Options.Secure = conf.SecureCookie
 	store.Options.HttpOnly = true
-	store.Options.SameSite = http.SameSiteLaxMode
+	store.Options.SameSite = http.SameSiteStrictMode
 	return &Container{config: conf, db: db, renderer: renderer, sessionStore: store}, nil
 }
 
-func (c Container) Querier() database.Querier    { return database.New(c.db) }
+// Querier returns a database.Querier.
+func (c Container) Querier() database.Querier { return database.New(c.db) }
+
+// Renderer returns the template.Renderer.
 func (c Container) Renderer() *template.Renderer { return c.renderer }
+
+// SessionStore returns the sessions.Store.
 func (c Container) SessionStore() sessions.Store { return c.sessionStore }
-func (c Container) Config() config.Config        { return c.config }
-func (c Container) DB() *sql.DB                  { return c.db }
+
+// Config returns the config.Config.
+func (c Container) Config() config.Config { return c.config }
+
+// DB returns the *sql.DB.
+func (c Container) DB() *sql.DB { return c.db }
