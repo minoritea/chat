@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/minoritea/chat/config"
 	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/router"

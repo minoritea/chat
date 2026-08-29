@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/minoritea/chat/config"
 	"github.com/minoritea/chat/database"
 	"github.com/minoritea/chat/template"
