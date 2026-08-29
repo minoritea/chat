@@ -84,6 +84,7 @@ bundle-sakura-css: node_modules
 bundle-js: bundle-stimulus bundle-turbo bundle-stimulus-use
 bundle-css: bundle-sakura-css
 bundle-assets: bundle-js bundle-css
+
 ./bin/golangci-lint:
 	env GOBIN=./bin go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 lint:
