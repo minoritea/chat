@@ -36,7 +36,7 @@ func PerpetuateSession(ctx context.Context, c QuerierContainer, userID string) (
 	return c.Querier().CreateSession(ctx, database.CreateSessionParams{
 		ID:        database.NewID(),
 		UserID:    userID,
-		ExpiresAt: time.Now().AddDate(1, 0, 0),
+		ExpiresAt: time.Now().AddDate(0, 0, 30),
 	})
 }
 

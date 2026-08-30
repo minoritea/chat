@@ -84,7 +84,7 @@ func (o *OAuth2) AuthCodeURL() string {
 
 // Exchange exchanges the auth code for a token and stores it in o.
 func (o *OAuth2) Exchange(ctx context.Context, code string) error {
-	ctx, cancel := context.WithTimeoutCause(ctx, 5*time.Minute, fmt.Errorf("oauth2 exchange: %w", context.DeadlineExceeded))
+	ctx, cancel := context.WithTimeoutCause(ctx, 10*time.Second, fmt.Errorf("oauth2 exchange: %w", context.DeadlineExceeded))
 	defer cancel()
 	token, err := o.Config.Exchange(ctx, code)
 	if err != nil {
@@ -106,7 +106,10 @@ func (o *OAuth2) GetGithubUserName(ctx context.Context) (string, error) {
 		return "", err
 	}
 	o.token.SetAuthHeader(req)
-	resp, err := http.DefaultClient.Do(req.WithContext(ctx))
+	const timeout = 10 * time.Second
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	resp, err := new(http.Client{Timeout: timeout}).Do(req.WithContext(ctx))
 	if err != nil {
 		return "", err
 	}

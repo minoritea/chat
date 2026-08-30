@@ -41,6 +41,9 @@ func run() error {
 		Addr:              conf.BindAddr(),
 		Handler:           r,
 		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       400 * time.Second,
 	}
 	shutdownCh := make(chan os.Signal, 1)
 	signal.Notify(shutdownCh, syscall.SIGINT, syscall.SIGTERM)
