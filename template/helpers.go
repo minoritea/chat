@@ -10,5 +10,5 @@ var helpers = template.FuncMap{"formatAsDateTime": FormatAsDateTime}
 
 // FormatAsDateTime formats t using the time.DateTime layout.
 func FormatAsDateTime(t time.Time) string {
-	return t.Format(time.DateTime)
+	return t.In(time.Local).Format(time.DateTime)
 }

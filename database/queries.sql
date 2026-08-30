@@ -12,7 +12,7 @@ RETURNING *;
 -- name: GetUserBySessionID :one
 SELECT users.*
 FROM users JOIN sessions ON sessions.user_id = users.id
-WHERE sessions.id = ? and sessions.expires_at > current_timestamp;
+WHERE sessions.id = ? and unixepoch(sessions.expires_at) > unixepoch();
 
 -- name: CreateMessage :one
 INSERT INTO messages (id, user_id, message, created_at) VALUES (?, ?, ?, ?)

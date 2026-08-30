@@ -23,7 +23,7 @@ type Container struct {
 
 // New returns a new Container.
 func New(conf config.Config) (*Container, error) {
-	db, err := sql.Open(conf.DatabaseDriver, conf.DatabasePath+"?_loc=UTC&_journal=WAL&_timeout=5000")
+	db, err := sql.Open(conf.DatabaseDriver, conf.DatabasePath+"?_journal=WAL&_timeout=5000")
 	if err != nil {
 		return nil, err
 	}

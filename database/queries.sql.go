@@ -88,7 +88,7 @@ func (q *Queries) GetUserByAccount(ctx context.Context, account string) (User, e
 const getUserBySessionID = `-- name: GetUserBySessionID :one
 SELECT users.id, users.account
 FROM users JOIN sessions ON sessions.user_id = users.id
-WHERE sessions.id = ? and sessions.expires_at > current_timestamp
+WHERE sessions.id = ? and unixepoch(sessions.expires_at) > unixepoch()
 `
 
 func (q *Queries) GetUserBySessionID(ctx context.Context, id string) (User, error) {
