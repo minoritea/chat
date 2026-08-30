@@ -53,7 +53,7 @@ func New(c Container) http.Handler {
 		r.Use(
 			sourceMap,
 			middleware.PathRewrite(c.Config().AssetPath(), ""),
-			middleware.SetHeader("Cache-Control", "immutable; max-age=31536000"),
+			middleware.SetHeader("Cache-Control", "public, max-age=31536000, immutable"),
 		)
 		r.Get("/js/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
 		r.Get("/css/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)

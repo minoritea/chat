@@ -6,10 +6,11 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/minoritea/chat/config"
 	"github.com/minoritea/chat/database"
 	"github.com/minoritea/chat/template"
+	// To load sqlite3 driver
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Container holds the application's resources and implements the container interfaces.

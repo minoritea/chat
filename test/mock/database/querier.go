@@ -21,6 +21,7 @@ import (
 type MockQuerier struct {
 	ctrl     *gomock.Controller
 	recorder *MockQuerierMockRecorder
+	isgomock struct{}
 }
 
 // MockQuerierMockRecorder is the mock recorder for MockQuerier.

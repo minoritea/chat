@@ -12,26 +12,28 @@
 .SILENT: bun
 
 migrate:
-	go run github.com/sqldef/sqldef/cmd/sqlite3def@v0.16.13 ./chat.db < ./database/schema.sql
+	go run github.com/sqldef/sqldef/cmd/sqlite3def@v3.11.20 ./chat.db < ./database/schema.sql
 
 migrate-dry-run:
-	go run github.com/sqldef/sqldef/cmd/sqlite3def@v0.16.13 --dry-run ./chat.db < ./database/schema.sql
+	go run github.com/sqldef/sqldef/cmd/sqlite3def@v3.11.20 --dry-run ./chat.db < ./database/schema.sql
 
 generate-queries:
-	go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0 generate
+	go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 generate
 	$(MAKE) generate-query-interfaces
 	$(MAKE) generate-query-mock
 
 generate-query-interfaces:
-	go run github.com/vburenin/ifacemaker@v1.2.1 \
+	go run github.com/vburenin/ifacemaker@v1.4.0 \
 		-f database/queries.sql.go \
+		-f database/db.go \
 		-s Queries \
 		-i Querier \
 		-p database \
+		-e WithTx \
 		-o database/interface.go
 
 generate-query-mock:
-	go run go.uber.org/mock/mockgen@v0.4.0 \
+	go run go.uber.org/mock/mockgen@v0.6.0 \
 		-source database/interface.go \
 		-destination test/mock/database/querier.go \
 		-package database
@@ -86,7 +88,7 @@ bundle-css: bundle-sakura-css
 bundle-assets: bundle-js bundle-css
 
 ./bin/golangci-lint:
-	env GOBIN=./bin go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+	env GOBIN=./bin go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
 lint:
 	./bin/golangci-lint run
 fmt:

@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"log"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 	"github.com/minoritea/chat/config"
 	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/router"
-	"golang.org/x/sync/errgroup"
 )
 
 var version = "0.0.0"
@@ -42,19 +42,26 @@ func run() error {
 		Handler:           r,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
-	sigint := make(chan os.Signal, 1)
-	signal.Notify(sigint, os.Interrupt)
-	g := new(errgroup.Group)
-	g.Go(srv.ListenAndServe)
-	g.Go(func() error {
-		<-sigint
+	shutdownCh := make(chan os.Signal, 1)
+	signal.Notify(shutdownCh, syscall.SIGINT, syscall.SIGTERM)
+	errCh := make(chan error, 1)
+	go func() {
+		err := srv.ListenAndServe()
+		// ErrServerClosed means Shutdown was called,
+		// so the shutdown goroutine reports the result via errCh.
+		if errors.Is(err, http.ErrServerClosed) {
+			return
+		}
+		errCh <- err
+	}()
+	go func() {
+		<-shutdownCh
+		// Give graceful shutdown up to 30 seconds.
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
-		ctx, cancel = signal.NotifyContext(ctx, syscall.SIGTERM, syscall.SIGKILL)
-		defer cancel()
-		return srv.Shutdown(ctx)
-	})
-	return g.Wait()
+		errCh <- srv.Shutdown(ctx)
+	}()
+	return <-errCh
 }
 
 func main() {

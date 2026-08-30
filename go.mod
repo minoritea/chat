@@ -10,7 +10,6 @@ require (
 	github.com/playwright-community/playwright-go v0.4001.0
 	go.uber.org/mock v0.6.0
 	golang.org/x/oauth2 v0.36.0
-	golang.org/x/sync v0.22.0
 )
 
 require (
