@@ -2,7 +2,6 @@ package template
 
 import (
 	"bytes"
-	"database/sql"
 	"embed"
 	"html/template"
 	"io"
@@ -14,11 +13,6 @@ var (
 	//go:embed *.tmpl
 	tmplFS embed.FS
 )
-
-// Container provides a *sql.DB.
-type Container interface {
-	GetDB() *sql.DB
-}
 
 // Renderer renders HTML and Turbo Stream responses.
 type Renderer struct {

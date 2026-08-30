@@ -2,15 +2,19 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/minoritea/chat/config"
 	"github.com/minoritea/chat/resource"
 	"github.com/minoritea/chat/router"
+	"golang.org/x/sync/errgroup"
 )
 
 var version = "0.0.0"
@@ -38,7 +42,19 @@ func run() error {
 		Handler:           r,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
-	return srv.ListenAndServe()
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, os.Interrupt)
+	g := new(errgroup.Group)
+	g.Go(srv.ListenAndServe)
+	g.Go(func() error {
+		<-sigint
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		ctx, cancel = signal.NotifyContext(ctx, syscall.SIGTERM, syscall.SIGKILL)
+		defer cancel()
+		return srv.Shutdown(ctx)
+	})
+	return g.Wait()
 }
 
 func main() {

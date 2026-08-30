@@ -22,7 +22,7 @@ type Container struct {
 
 // New returns a new Container.
 func New(conf config.Config) (*Container, error) {
-	db, err := sql.Open(conf.DatabaseDriver, conf.DatabasePath)
+	db, err := sql.Open(conf.DatabaseDriver, conf.DatabasePath+"?_loc=UTC&_journal=WAL&_timeout=5000")
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func New(conf config.Config) (*Container, error) {
 	}
 	store := sessions.NewCookieStore([]byte(conf.SessionSecret))
 	store.Options.HttpOnly = true
-	store.Options.SameSite = http.SameSiteStrictMode
+	store.Options.SameSite = http.SameSiteLaxMode
 	return &Container{config: conf, db: db, renderer: renderer, sessionStore: store}, nil
 }
 

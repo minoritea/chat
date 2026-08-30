@@ -8,11 +8,7 @@ import (
 	"github.com/minoritea/chat/domain/auth"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
-	"github.com/minoritea/chat/resource"
 )
-
-// Container is an alias for resource.Container.
-type Container = resource.Container
 
 // GetHandler returns a handler for GET /auth.
 func GetHandler(c Container) http.HandlerFunc {

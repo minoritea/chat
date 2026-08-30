@@ -16,7 +16,7 @@ func (m Message) GetMessage() string      { return "" }
 func (m Message) GetCreatedAt() time.Time { return time.Now() }
 func (m Message) GetAccount() string      { return "" }
 
-var _ database.IMessage = (*Message)(nil)
+var _ database.MessageData = (*Message)(nil)
 
 func TestGetMessageData(t *testing.T) {
 	type Param struct{}

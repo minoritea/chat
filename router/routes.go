@@ -12,6 +12,8 @@ import (
 	"github.com/minoritea/chat/resource"
 )
 
+const requestBodyLimit int64 = 1024 * 1024 // Accept request bodies at most 1M
+
 // Container is an alias for resource.Container.
 type Container = resource.Container
 
@@ -19,6 +21,7 @@ type Container = resource.Container
 func New(c Container) http.Handler {
 	r := chi.NewRouter()
 	r.Use(
+		maxBytes(requestBodyLimit),
 		middleware.ClientIPFromHeader("CF-Connecting-IP"),
 		logger,
 		middleware.Recoverer,
@@ -50,6 +53,7 @@ func New(c Container) http.Handler {
 		r.Use(
 			sourceMap,
 			middleware.PathRewrite(c.Config().AssetPath(), ""),
+			middleware.SetHeader("Cache-Control", "immutable; max-age=31536000"),
 		)
 		r.Get("/js/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)
 		r.Get("/css/*", http.FileServer(http.FS(asset.FS)).ServeHTTP)

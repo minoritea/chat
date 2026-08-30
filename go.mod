@@ -8,9 +8,9 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.50
 	github.com/oklog/ulid/v2 v2.1.2
 	github.com/playwright-community/playwright-go v0.4001.0
-	github.com/samber/lo v1.53.0
 	go.uber.org/mock v0.6.0
 	golang.org/x/oauth2 v0.36.0
+	golang.org/x/sync v0.22.0
 )
 
 require (
@@ -19,5 +19,4 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/text v0.41.0 // indirect
 )

@@ -10,10 +10,10 @@ import (
 const FetchLimit = 20
 
 // Query is a function that fetches messages.
-type Query[T database.IMessage, P any] func(context.Context, P) ([]T, error)
+type Query[T database.MessageData, P any] func(context.Context, P) ([]T, error)
 
 // GetMessageData fetches messages with query and returns them as Data.
-func GetMessageData[T database.IMessage, P any](ctx context.Context, query Query[T, P], param P) (data Data, err error) {
+func GetMessageData[T database.MessageData, P any](ctx context.Context, query Query[T, P], param P) (data Data, err error) {
 	rows, err := query(ctx, param)
 	if err != nil {
 		return data, err

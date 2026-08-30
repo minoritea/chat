@@ -11,11 +11,7 @@ import (
 	"github.com/minoritea/chat/domain/message"
 	"github.com/minoritea/chat/domain/session"
 	"github.com/minoritea/chat/domain/user"
-	"github.com/minoritea/chat/resource"
 )
-
-// Container is an alias for resource.Container.
-type Container = resource.Container
 
 // Data is an alias for message.Data.
 type Data = message.Data
@@ -63,26 +59,26 @@ func GetHandler(c Container) http.HandlerFunc {
 		beforeID := r.URL.Query().Get("before_id")
 		afterID := r.URL.Query().Get("after_id")
 
-		switch [2]bool{beforeID != "", afterID != ""} {
-		case [2]bool{false, false}: // no query parameter is set
+		switch {
+		case beforeID == "" && afterID == "": // no query parameter is set
 			data, err = getOldestMessagesData(r.Context(), c)
 			if err != nil {
 				log.Println(err)
 				session.RedirectWithErrorFlash(w, r, s, "/", "Internal Server Error")
 				return
 			}
-		case [2]bool{true, true}: // both query parameters are set
+		case beforeID != "" && afterID != "": // both query parameters are set
 			log.Println("multiple query parameters are set")
 			session.RedirectWithErrorFlash(w, r, s, "/", "Failed to fetch messages")
 			return
-		case [2]bool{true, false}: // only before_id is set
+		case beforeID != "" && afterID == "": // only before_id is set
 			data, err = getMessagesDataBeforeID(r.Context(), c, beforeID)
 			if err != nil {
 				log.Println(err)
 				session.RedirectWithErrorFlash(w, r, s, "/", "Internal Server Error")
 				return
 			}
-		case [2]bool{false, true}: // only after_id is set
+		case beforeID == "" && afterID != "": // only after_id is set
 			data, err = getMessagesDataAfterID(r.Context(), c, afterID)
 			if err != nil {
 				log.Println(err)

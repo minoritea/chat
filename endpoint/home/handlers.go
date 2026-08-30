@@ -7,11 +7,7 @@ import (
 
 	"github.com/minoritea/chat/domain/message"
 	"github.com/minoritea/chat/domain/session"
-	"github.com/minoritea/chat/resource"
 )
-
-// Container is an alias for resource.Container.
-type Container = resource.Container
 
 // GetHandler returns a handler for GET /.
 func GetHandler(c Container) http.HandlerFunc {
@@ -34,7 +30,7 @@ func GetHandler(c Container) http.HandlerFunc {
 		}
 		data.Data = baseData
 		data.Action = "prepend"
-		data.IsTerminal = len(data.Messages) < 20
+		data.IsTerminal = len(data.Messages) < message.FetchLimit
 		c.Renderer().RenderOkHTML(w, "home", data)
 	})
 }

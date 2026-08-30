@@ -70,17 +70,17 @@ func (r ListOldestMessagesRow) GetCreatedAt() time.Time { return r.CreatedAt }
 // GetAccount returns the account name.
 func (r ListOldestMessagesRow) GetAccount() string { return r.Account }
 
-// IMessage is implemented by message row types.
-type IMessage interface {
+// MessageData is implemented by message row types.
+type MessageData interface {
 	GetID() string
 	GetMessage() string
 	GetCreatedAt() time.Time
 	GetAccount() string
 }
 
-// RowsToMessages converts a slice of T to a slice of IMessage.
-func RowsToMessages[T IMessage](ms []T) []IMessage {
-	result := make([]IMessage, len(ms))
+// RowsToMessages converts a slice of T to a slice of MessageData.
+func RowsToMessages[T MessageData](ms []T) []MessageData {
+	result := make([]MessageData, len(ms))
 	for i, m := range ms {
 		result[i] = m
 	}

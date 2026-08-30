@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/sessions"
 	"github.com/minoritea/chat/config"
@@ -82,6 +84,8 @@ func (o *OAuth2) AuthCodeURL() string {
 
 // Exchange exchanges the auth code for a token and stores it in o.
 func (o *OAuth2) Exchange(ctx context.Context, code string) error {
+	ctx, cancel := context.WithTimeoutCause(ctx, 5*time.Minute, fmt.Errorf("oauth2 exchange: %w", context.DeadlineExceeded))
+	defer cancel()
 	token, err := o.Config.Exchange(ctx, code)
 	if err != nil {
 		return err
