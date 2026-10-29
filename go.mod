@@ -3,7 +3,7 @@ module github.com/minoritea/chat
 go 1.27
 
 require (
-	github.com/go-chi/chi/v5 v5.3.2
+	github.com/go-chi/chi/v5 v5.4.0
 	github.com/gorilla/sessions v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.50
 	github.com/oklog/ulid/v2 v2.1.2
